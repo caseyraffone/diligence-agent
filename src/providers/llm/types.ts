@@ -76,7 +76,12 @@ export interface StructuredRequest<T> {
   /** Trusted instruction written by this application. */
   instruction: string;
   untrusted: UntrustedBlock[];
-  schema: z.ZodType<T>;
+  /**
+   * Bound to the schema's OUTPUT type. Declaring the input as `unknown` keeps
+   * TypeScript from inferring `T` from the pre-parse shape, which differs
+   * whenever a field carries a `.default()`.
+   */
+  schema: z.ZodType<T, z.ZodTypeDef, unknown>;
   schemaName: string;
   /** JSON shape description included in the prompt to steer the model. */
   schemaHint: string;
@@ -104,7 +109,7 @@ export class LlmError extends Error {
   constructor(
     message: string,
     readonly provider: string,
-    readonly cause?: unknown,
+    override readonly cause?: unknown,
   ) {
     super(message);
     this.name = 'LlmError';

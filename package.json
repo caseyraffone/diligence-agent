@@ -1,0 +1,58 @@
+{
+  "name": "credential-integrity-agent",
+  "version": "0.1.0",
+  "private": true,
+  "license": "Apache-2.0",
+  "description": "Investigative decision-support for authorized verification of factual claims in applications and resumes. Not an admissions, hiring, or eligibility decision system.",
+  "scripts": {
+    "dev": "next dev -p 3200",
+    "setup": "node scripts/setup.mjs",
+    "build": "prisma generate && next build",
+    "start": "next start -p 3200",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "prisma:validate": "prisma validate",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:deploy": "prisma migrate deploy",
+    "db:seed": "tsx prisma/seed.ts",
+    "db:reset": "prisma migrate reset --force --skip-seed && npm run db:seed",
+    "test": "node scripts/test.mjs",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "verify": "npm run format:check && npm run lint && npm run typecheck && npm run prisma:validate && npm run test && npm run build"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.19.3",
+    "next": "^15.5.9",
+    "pdfjs-dist": "^4.10.38",
+    "pdfkit": "^0.17.2",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.5",
+    "@playwright/test": "^1.57.1",
+    "@types/node": "^22.19.2",
+    "@types/pdfkit": "^0.17.4",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.4",
+    "@typescript-eslint/eslint-plugin": "^8.46.4",
+    "@typescript-eslint/parser": "^8.46.4",
+    "eslint": "^9.39.5",
+    "prettier": "^3.6.2",
+    "prisma": "^6.19.3",
+    "tsx": "^4.20.7",
+    "typescript": "^5.9.3",
+    "vitest": "^2.1.9"
+  },
+  "engines": {
+    "node": ">=22.11 <23"
+  }
+}

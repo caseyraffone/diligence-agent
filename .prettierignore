@@ -1,0 +1,13 @@
+node_modules/
+.next/
+dist/
+build/
+coverage/
+storage/
+playwright-report/
+test-results/
+package-lock.json
+LICENSE
+prisma/migrations/
+src/generated/
+tests/fixtures/documents/

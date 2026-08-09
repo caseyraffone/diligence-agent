@@ -1,0 +1,927 @@
+// Credential Integrity Agent — data model.
+//
+// Design rules encoded here:
+//  * Every case-scoped row carries `organizationId` so tenant isolation can be
+//    enforced by a required predicate rather than by remembering to join.
+//  * Original documents (storageKey) are separated from extracted data
+//    (DocumentPage / ExtractedClaim) so retention can delete originals while
+//    preserving the audit trail.
+//  * No column anywhere stores race, ethnicity, religion, disability, medical
+//    status, sex, gender identity, sexual orientation, age, family status, or a
+//    socioeconomic proxy. Prioritization cannot use what is not modelled.
+//  * Statuses are neutral. There is no "fraud", "liar", or "reject" value.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------- enums
+
+enum UseCase {
+  UNIVERSITY_APPLICATION
+  JOB_APPLICATION
+  SCHOLARSHIP_FELLOWSHIP
+  PROFESSIONAL_LICENSING
+  GRANT
+  VENDOR_FOUNDER_DILIGENCE
+}
+
+enum CaseStatus {
+  INTAKE
+  AWAITING_CONSENT
+  IN_VERIFICATION
+  AWAITING_APPLICANT
+  READY_FOR_REVIEW
+  CLOSED
+}
+
+/// Neutral claim statuses. "Unable to verify" is an evidence state, never a
+/// judgement about the applicant.
+enum ClaimStatus {
+  PENDING_VERIFICATION
+  VERIFIED
+  CORROBORATED
+  PARTIALLY_CORROBORATED
+  UNABLE_TO_VERIFY
+  CONFLICTING_INFORMATION
+  APPLICANT_CLARIFICATION_REQUESTED
+  HUMAN_REVIEW_REQUIRED
+}
+
+enum ClaimCategory {
+  EDUCATION_ENROLLMENT
+  DEGREE_AWARD
+  EMPLOYMENT
+  AWARD_COMPETITION
+  RESEARCH_POSITION
+  PUBLICATION
+  ATHLETIC_PARTICIPATION
+  CERTIFICATION_LICENSE
+  VOLUNTEER_LEADERSHIP
+  PROJECT_VENTURE_PATENT
+  QUANTITATIVE_METRIC
+  OTHER
+}
+
+enum DatePrecision {
+  DAY
+  MONTH
+  YEAR
+  RANGE_APPROXIMATE
+  UNKNOWN
+}
+
+enum DocumentKind {
+  APPLICATION
+  RESUME_CV
+  TRANSCRIPT
+  AWARD_CERTIFICATE
+  RECOMMENDATION_LETTER
+  PUBLICATION
+  PORTFOLIO
+  SUPPORTING_EVIDENCE
+  APPLICANT_CLARIFICATION_UPLOAD
+  OTHER
+}
+
+enum DocumentStatus {
+  UPLOADED
+  SCANNING
+  SCAN_FAILED
+  QUARANTINED
+  PARSING
+  PARSED
+  PARSE_FAILED
+  DELETED_BY_RETENTION
+}
+
+enum ScanStatus {
+  PENDING
+  CLEAN
+  INFECTED
+  UNSUPPORTED
+  ERROR
+}
+
+/// Source hierarchy, 1 = most authoritative. Stored as an int so comparisons
+/// are deterministic and orderable.
+enum AuthorityLevel {
+  L1_ISSUING_AUTHORITY
+  L2_OFFICIAL_WEBSITE
+  L3_AUTHORIZED_REPRESENTATIVE
+  L4_SIGNED_VERIFIABLE_RECORD
+  L5_INDEPENDENT_REPORTING
+  L6_APPLICANT_PROVIDED
+  L7_INFORMAL_SELF_PUBLISHED
+}
+
+enum EvidenceRelation {
+  SUPPORTING
+  CONFLICTING
+  NEUTRAL
+}
+
+/// The report must never blur these. Every evidence row is typed.
+enum StatementType {
+  CONFIRMED_FACT
+  APPLICANT_STATEMENT
+  THIRD_PARTY_STATEMENT
+  SYSTEM_OBSERVATION
+  INFERENCE
+  UNRESOLVED_DISCREPANCY
+}
+
+enum SourceCheckResult {
+  MATCH
+  PARTIAL_MATCH
+  NO_MATCH
+  RECORD_NOT_FOUND
+  SOURCE_UNAVAILABLE
+  INCONCLUSIVE
+  ERROR
+}
+
+enum DiscrepancyKind {
+  CONFLICTING_DATES
+  OVERLAPPING_FULL_TIME_COMMITMENT
+  TITLE_MISMATCH
+  ORGANIZATION_NAME_MISMATCH
+  AWARD_LEVEL_INCONSISTENCY
+  RANKING_MISMATCH
+  PUBLICATION_AUTHORSHIP_DISCREPANCY
+  UNSUPPORTED_BY_RECOMMENDATION
+  RESEARCH_DESCRIPTION_DIVERGENCE
+  ARITHMETIC_INCONSISTENCY
+  DUPLICATE_DOCUMENT
+  DOCUMENT_ANOMALY
+  CLAIM_SOURCE_CONFLICT
+}
+
+enum DiscrepancySeverity {
+  INFORMATIONAL
+  REVIEW_SUGGESTED
+  REVIEW_REQUIRED
+}
+
+enum DiscrepancyStatus {
+  OPEN
+  UNDER_REVIEW
+  EXPLAINED
+  RESOLVED
+  DISMISSED_NOT_AN_ISSUE
+}
+
+enum TaskType {
+  PARSE_DOCUMENT
+  EXTRACT_CLAIMS
+  PLAN_VERIFICATION
+  RUN_SOURCE_CHECK
+  ANALYZE_CONSISTENCY
+  GENERATE_INTERVIEW_QUESTIONS
+  RECOMPUTE_CASE_SUMMARY
+  APPLY_RETENTION
+}
+
+enum TaskStatus {
+  PENDING
+  RUNNING
+  SUCCEEDED
+  FAILED
+  CANCELLED
+  BLOCKED_AWAITING_CONSENT
+}
+
+enum OutreachStatus {
+  DRAFT
+  PENDING_APPROVAL
+  APPROVED_FOR_SENDING
+  SENT_RECORDED_MANUALLY
+  DECLINED_BY_REVIEWER
+  RESPONSE_RECEIVED
+  NO_RESPONSE
+}
+
+enum ClarificationStatus {
+  DRAFT
+  PENDING_APPROVAL
+  APPROVED
+  SENT
+  RESPONDED
+  CLOSED
+}
+
+enum TipStatus {
+  RECEIVED
+  DUPLICATE_SUPPRESSED
+  UNDER_REVIEW
+  CORROBORATION_REQUIRED
+  INDEPENDENTLY_CORROBORATED
+  CLOSED_UNSUBSTANTIATED
+  CLOSED_OUT_OF_SCOPE
+}
+
+enum ActorType {
+  USER
+  SYSTEM
+  APPLICANT
+  ANONYMOUS
+}
+
+enum ConsentScope {
+  INTERNAL_REVIEW_ONLY
+  EXTERNAL_PUBLIC_SOURCES
+  ISSUING_ORGANIZATION_OUTREACH
+  REFERENCE_OUTREACH
+}
+
+enum RetentionAction {
+  DELETE_ORIGINAL_DOCUMENTS
+  ANONYMIZE_APPLICANT
+  DELETE_CASE
+}
+
+enum ExtractionOrigin {
+  MODEL
+  HUMAN
+  MODEL_EDITED_BY_HUMAN
+}
+
+// ---------------------------------------------------------------- tenancy
+
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  createdAt DateTime @default(now())
+  settings  Json     @default("{}")
+
+  users            User[]
+  applicants       Applicant[]
+  cases            Case[]
+  policyTemplates  PolicyTemplate[]
+  auditEvents      AuditEvent[]
+  retentionRules   RetentionRule[]
+  anonymousTips    AnonymousTip[]
+}
+
+model Role {
+  id          String   @id @default(cuid())
+  key         String   @unique // ADMIN | LEAD_REVIEWER | REVIEWER | READ_ONLY_AUDITOR
+  name        String
+  description String
+  /// Permission keys; see src/lib/auth/permissions.ts for the closed set.
+  permissions String[]
+  createdAt   DateTime @default(now())
+
+  users User[]
+}
+
+model User {
+  id             String    @id @default(cuid())
+  organizationId String
+  email          String
+  name           String
+  passwordHash   String
+  roleId         String
+  isActive       Boolean   @default(true)
+  lastLoginAt    DateTime?
+  createdAt      DateTime  @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  role         Role         @relation(fields: [roleId], references: [id])
+
+  sessions             Session[]
+  assignedCases        Case[]                @relation("CaseAssignee")
+  uploadedDocuments    ApplicationDocument[]
+  auditEvents          AuditEvent[]
+  reviewerDecisions    ReviewerDecision[]
+  reviewerNotes        ReviewerNote[]
+  claimRevisions       ClaimRevision[]
+  approvedOutreach     OutreachRequest[]     @relation("OutreachApprover")
+  recordedResponses    OutreachResponse[]
+  approvedClarifs      ClarificationRequest[] @relation("ClarificationApprover")
+  interviews           Interview[]
+  resolvedDiscrepancies Discrepancy[]        @relation("DiscrepancyResolver")
+
+  @@unique([organizationId, email])
+  @@index([organizationId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  userId       String
+  /// Only the SHA-256 of the session token is stored; the raw token lives in an
+  /// httpOnly cookie and is never persisted.
+  tokenHash    String   @unique
+  csrfSecret   String
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+  lastSeenAt   DateTime @default(now())
+  revokedAt    DateTime?
+  userAgentHash String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+// ---------------------------------------------------------------- policy
+
+model PolicyTemplate {
+  id             String   @id @default(cuid())
+  /// Null = built-in global template available to every tenant.
+  organizationId String?
+  key            String
+  name           String
+  useCase        UseCase
+  description    String
+  version        Int      @default(1)
+  /// Claim categories this policy cares about.
+  relevantClaimCategories ClaimCategory[]
+  /// Adapter keys approved for this policy.
+  approvedSourceKeys      String[]
+  /// { minAuthorityLevelForVerified, requiresIssuingAuthority: [...], ... }
+  evidenceRequirements    Json     @default("{}")
+  retentionDays           Int      @default(365)
+  /// { escalateWhenConflicting: true, escalateAfterFailedChecks: 2, ... }
+  escalationRules         Json     @default("{}")
+  /// Reviewer-facing wording for the report header/footer/disclaimers.
+  reportLanguage          Json     @default("{}")
+  isActive                Boolean  @default(true)
+  createdAt               DateTime @default(now())
+
+  organization Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  cases        Case[]
+  retentionRules RetentionRule[]
+
+  @@unique([organizationId, key, version])
+  @@index([useCase])
+}
+
+// ---------------------------------------------------------------- case
+
+model Applicant {
+  id             String   @id @default(cuid())
+  organizationId String
+  /// Display name only. No DOB, no government identifier, no demographic field.
+  displayName    String
+  /// Tenant's own reference (student id, ATS id). Opaque to this system.
+  externalRef    String?
+  contactEmail   String?
+  anonymizedAt   DateTime?
+  createdAt      DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  cases        Case[]
+
+  @@index([organizationId])
+}
+
+model Case {
+  id               String     @id @default(cuid())
+  organizationId   String
+  applicantId      String
+  policyTemplateId String
+  reference        String
+  title            String
+  status           CaseStatus @default(INTAKE)
+  /// Derived from evidence gaps and unresolved discrepancies only.
+  priorityScore    Int        @default(0)
+  dueDate          DateTime?
+  assignedReviewerId String?
+  closedAt         DateTime?
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+
+  organization   Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  applicant      Applicant      @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+  policyTemplate PolicyTemplate @relation(fields: [policyTemplateId], references: [id])
+  assignedReviewer User?        @relation("CaseAssignee", fields: [assignedReviewerId], references: [id])
+
+  documents         ApplicationDocument[]
+  claims            ExtractedClaim[]
+  evidenceItems     EvidenceItem[]
+  sourceChecks      SourceCheck[]
+  discrepancies     Discrepancy[]
+  tasks             VerificationTask[]
+  outreachRequests  OutreachRequest[]
+  clarifications    ClarificationRequest[]
+  interviews        Interview[]
+  decisions         ReviewerDecision[]
+  notes             ReviewerNote[]
+  consents          ConsentRecord[]
+  tips              AnonymousTip[]
+  auditEvents       AuditEvent[]
+
+  @@unique([organizationId, reference])
+  @@index([organizationId, status])
+}
+
+model ConsentRecord {
+  id          String       @id @default(cuid())
+  caseId      String
+  scope       ConsentScope
+  grantedAt   DateTime
+  /// How consent was evidenced: signed form, application checkbox, etc.
+  grantedVia  String
+  documentRef String?
+  revokedAt   DateTime?
+  recordedByUserId String?
+  createdAt   DateTime     @default(now())
+
+  case Case @relation(fields: [caseId], references: [id], onDelete: Cascade)
+
+  @@index([caseId, scope])
+}
+
+// ---------------------------------------------------------------- documents
+
+model ApplicationDocument {
+  id             String         @id @default(cuid())
+  organizationId String
+  caseId         String
+  filename       String
+  mimeType       String
+  sizeBytes      Int
+  /// Content hash; also used for duplicate-document detection.
+  sha256         String
+  /// Key in the object store. Original bytes never live in the database.
+  storageKey     String
+  kind           DocumentKind
+  status         DocumentStatus @default(UPLOADED)
+  scanStatus     ScanStatus     @default(PENDING)
+  scanDetail     String?
+  pageCount      Int            @default(0)
+  uploadedById   String?
+  /// Source of the upload: reviewer console or applicant portal.
+  uploadedVia    ActorType      @default(USER)
+  /// Observable file/metadata facts only. Never a forgery verdict.
+  integritySignals Json         @default("[]")
+  originalDeletedAt DateTime?
+  createdAt      DateTime       @default(now())
+
+  case       Case  @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  uploadedBy User? @relation(fields: [uploadedById], references: [id])
+
+  pages  DocumentPage[]
+  claims ExtractedClaim[]
+  evidenceItems EvidenceItem[]
+
+  @@index([caseId])
+  @@index([organizationId, sha256])
+}
+
+model DocumentPage {
+  id         String @id @default(cuid())
+  documentId String
+  pageNumber Int
+  /// Redacted, extracted text. Government identifiers are masked before write.
+  text       String
+  charCount  Int    @default(0)
+
+  document ApplicationDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@unique([documentId, pageNumber])
+}
+
+// ---------------------------------------------------------------- claims
+
+model ExtractedClaim {
+  id             String        @id @default(cuid())
+  organizationId String
+  caseId         String
+  documentId     String
+  pageNumber     Int
+  /// Verbatim text from the document, used for citation back to the page.
+  sourcePassage  String
+  normalizedText String
+  category       ClaimCategory
+  personName       String?
+  organizationName String?
+  title            String?
+  location         String?
+  startDate      DateTime?
+  endDate        DateTime?
+  datePrecision  DatePrecision @default(UNKNOWN)
+  amountValue    Decimal?      @db.Decimal(20, 4)
+  amountUnit     String?
+  isObjectivelyVerifiable Boolean @default(true)
+  suggestedSourceKey      String?
+  status         ClaimStatus   @default(PENDING_VERIFICATION)
+  /// Confidence that the text was read and structured correctly.
+  /// NOT a judgement about the applicant's honesty.
+  extractionConfidence Float   @default(0)
+  origin         ExtractionOrigin @default(MODEL)
+  isFullTimeCommitment Boolean @default(false)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  case     Case                @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  document ApplicationDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  evidenceItems  EvidenceItem[]
+  sourceChecks   SourceCheck[]
+  tasks          VerificationTask[]
+  outreach       OutreachRequest[]
+  clarifications ClarificationRequest[]
+  interviews     Interview[]
+  decisions      ReviewerDecision[]
+  revisions      ClaimRevision[]
+
+  @@index([caseId, status])
+  @@index([caseId, category])
+}
+
+/// Append-only history of reviewer edits. Original extraction is never erased.
+model ClaimRevision {
+  id        String   @id @default(cuid())
+  claimId   String
+  userId    String?
+  before    Json
+  after     Json
+  reason    String
+  createdAt DateTime @default(now())
+
+  claim ExtractedClaim @relation(fields: [claimId], references: [id], onDelete: Cascade)
+  user  User?          @relation(fields: [userId], references: [id])
+
+  @@index([claimId])
+}
+
+// ---------------------------------------------------------------- evidence
+
+model EvidenceItem {
+  id             String           @id @default(cuid())
+  organizationId String
+  caseId         String
+  claimId        String
+  relation       EvidenceRelation
+  statementType  StatementType
+  authorityLevel AuthorityLevel
+  summary        String
+  detail         String?
+  sourceCheckId  String?          @unique
+  documentId     String?
+  outreachResponseId String?      @unique
+  clarificationResponseId String?  @unique
+  createdByUserId String?
+  createdAt      DateTime         @default(now())
+
+  case         Case                @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  claim        ExtractedClaim      @relation(fields: [claimId], references: [id], onDelete: Cascade)
+  sourceCheck  SourceCheck?        @relation(fields: [sourceCheckId], references: [id])
+  document     ApplicationDocument? @relation(fields: [documentId], references: [id])
+  outreachResponse OutreachResponse? @relation(fields: [outreachResponseId], references: [id])
+  clarificationResponse ClarificationResponse? @relation(fields: [clarificationResponseId], references: [id])
+
+  @@index([caseId])
+  @@index([claimId, relation])
+}
+
+model SourceCheck {
+  id             String            @id @default(cuid())
+  organizationId String
+  caseId         String
+  claimId        String
+  adapterKey     String
+  query          Json
+  url            String?
+  retrievedAt    DateTime
+  excerpt        String?
+  authorityLevel AuthorityLevel
+  result         SourceCheckResult
+  /// Adapter's own explanation. Never a fraud conclusion.
+  detail         String?
+  /// Raw payload is kept in object storage, not inline, to bound row size.
+  rawResponseKey String?
+  latencyMs      Int               @default(0)
+  isLive         Boolean           @default(false)
+  createdAt      DateTime          @default(now())
+
+  case  Case           @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  claim ExtractedClaim @relation(fields: [claimId], references: [id], onDelete: Cascade)
+
+  evidenceItem EvidenceItem?
+
+  @@index([caseId])
+  @@index([claimId])
+}
+
+// ---------------------------------------------------------------- analysis
+
+model Discrepancy {
+  id             String              @id @default(cuid())
+  organizationId String
+  caseId         String
+  kind           DiscrepancyKind
+  severity       DiscrepancySeverity
+  status         DiscrepancyStatus   @default(OPEN)
+  title          String
+  /// States the observation and why it merits review. Never asserts intent.
+  description    String
+  claimIds       String[]
+  documentIds    String[]
+  /// Deterministic rule identifier, for testability and explanation.
+  ruleKey        String
+  detectedBy     ActorType           @default(SYSTEM)
+  resolutionNote String?
+  resolvedByUserId String?
+  resolvedAt     DateTime?
+  createdAt      DateTime            @default(now())
+
+  case       Case  @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  resolvedBy User? @relation("DiscrepancyResolver", fields: [resolvedByUserId], references: [id])
+
+  clarifications ClarificationRequest[]
+
+  @@unique([caseId, ruleKey])
+  @@index([caseId, status])
+}
+
+model VerificationTask {
+  id             String     @id @default(cuid())
+  organizationId String
+  caseId         String
+  claimId        String?
+  type           TaskType
+  status         TaskStatus @default(PENDING)
+  priority       Int        @default(100)
+  attempts       Int        @default(0)
+  maxAttempts    Int        @default(3)
+  runAfter       DateTime   @default(now())
+  lockedAt       DateTime?
+  lockedBy       String?
+  payload        Json       @default("{}")
+  result         Json?
+  error          String?
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  case  Case            @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  claim ExtractedClaim? @relation(fields: [claimId], references: [id], onDelete: Cascade)
+
+  @@index([status, runAfter])
+  @@index([caseId])
+}
+
+// ---------------------------------------------------------------- outreach
+
+model OutreachRequest {
+  id             String         @id @default(cuid())
+  organizationId String
+  caseId         String
+  claimId        String?
+  recipientOrgName String
+  recipientEmail   String?
+  recipientNote    String?
+  channel        String         @default("EMAIL")
+  subject        String
+  body           String
+  status         OutreachStatus @default(DRAFT)
+  /// Consent scope that must be present before this may be approved.
+  requiredConsent ConsentScope  @default(ISSUING_ORGANIZATION_OUTREACH)
+  approvedByUserId String?
+  approvedAt     DateTime?
+  /// The system never transmits. A reviewer records that they sent it.
+  sentRecordedAt DateTime?
+  declineReason  String?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  case       Case            @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  claim      ExtractedClaim? @relation(fields: [claimId], references: [id], onDelete: SetNull)
+  approvedBy User?           @relation("OutreachApprover", fields: [approvedByUserId], references: [id])
+
+  responses OutreachResponse[]
+
+  @@index([caseId, status])
+}
+
+model OutreachResponse {
+  id                String         @id @default(cuid())
+  outreachRequestId String
+  receivedAt        DateTime
+  respondentName    String
+  respondentRole    String?
+  /// Verbatim content of the reply, recorded by a reviewer.
+  content           String
+  authorityLevel    AuthorityLevel @default(L3_AUTHORIZED_REPRESENTATIVE)
+  /// Confidential replies are never surfaced in the applicant portal.
+  isConfidential    Boolean        @default(true)
+  recordedByUserId  String?
+  createdAt         DateTime       @default(now())
+
+  outreachRequest OutreachRequest @relation(fields: [outreachRequestId], references: [id], onDelete: Cascade)
+  recordedBy      User?           @relation(fields: [recordedByUserId], references: [id])
+
+  evidenceItem EvidenceItem?
+
+  @@index([outreachRequestId])
+}
+
+// ---------------------------------------------------------------- applicant clarification
+
+model ClarificationRequest {
+  id             String              @id @default(cuid())
+  organizationId String
+  caseId         String
+  claimId        String?
+  discrepancyId  String?
+  status         ClarificationStatus @default(DRAFT)
+  subject        String
+  /// Neutral wording; states the claim and the issue, not an accusation.
+  body           String
+  /// What the applicant may supply to resolve it.
+  acceptableEvidence String[]
+  dueDate        DateTime?
+  /// SHA-256 of a single-purpose portal token. Raw token is shown once.
+  tokenHash      String?             @unique
+  tokenExpiresAt DateTime?
+  approvedByUserId String?
+  approvedAt     DateTime?
+  sentRecordedAt DateTime?
+  closedAt       DateTime?
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+
+  case        Case            @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  claim       ExtractedClaim? @relation(fields: [claimId], references: [id], onDelete: SetNull)
+  discrepancy Discrepancy?    @relation(fields: [discrepancyId], references: [id], onDelete: SetNull)
+  approvedBy  User?           @relation("ClarificationApprover", fields: [approvedByUserId], references: [id])
+
+  responses ClarificationResponse[]
+
+  @@index([caseId, status])
+}
+
+model ClarificationResponse {
+  id                     String   @id @default(cuid())
+  clarificationRequestId String
+  submittedAt            DateTime @default(now())
+  message                String
+  documentIds            String[]
+  createdAt              DateTime @default(now())
+
+  clarificationRequest ClarificationRequest @relation(fields: [clarificationRequestId], references: [id], onDelete: Cascade)
+
+  evidenceItem EvidenceItem?
+
+  @@index([clarificationRequestId])
+}
+
+// ---------------------------------------------------------------- interview
+
+model Interview {
+  id             String   @id @default(cuid())
+  organizationId String
+  caseId         String
+  claimId        String?
+  topic          String
+  /// [{ id, area, question, rationale }]
+  questions      Json     @default("[]")
+  /// [{ questionId, corroborationRating, notes }]
+  scorecard      Json     @default("[]")
+  /// Reviewer's written conclusion. Required before humanReviewed can be true.
+  conclusion     String?
+  humanReviewed  Boolean  @default(false)
+  conductedByUserId String?
+  conductedAt    DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  case        Case            @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  claim       ExtractedClaim? @relation(fields: [claimId], references: [id], onDelete: SetNull)
+  conductedBy User?           @relation(fields: [conductedByUserId], references: [id])
+
+  @@index([caseId])
+}
+
+// ---------------------------------------------------------------- decisions
+
+model ReviewerDecision {
+  id             String      @id @default(cuid())
+  organizationId String
+  caseId         String
+  claimId        String?
+  previousStatus ClaimStatus?
+  newStatus      ClaimStatus
+  /// Free-text justification citing evidence ids. Required.
+  rationale      String
+  evidenceItemIds String[]
+  decidedByUserId String
+  decidedAt      DateTime    @default(now())
+  /// Every decision is reversible; reversals point at what they undo.
+  reversesDecisionId String?
+  isReversal     Boolean     @default(false)
+
+  case      Case            @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  claim     ExtractedClaim? @relation(fields: [claimId], references: [id], onDelete: SetNull)
+  decidedBy User            @relation(fields: [decidedByUserId], references: [id])
+
+  @@index([caseId])
+  @@index([claimId])
+}
+
+model ReviewerNote {
+  id        String   @id @default(cuid())
+  caseId    String
+  userId    String
+  body      String
+  createdAt DateTime @default(now())
+
+  case Case @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([caseId])
+}
+
+// ---------------------------------------------------------------- tips
+
+model AnonymousTip {
+  id             String    @id @default(cuid())
+  organizationId String
+  /// May be unlinked until a reviewer associates it with a case.
+  caseId         String?
+  submittedAt    DateTime  @default(now())
+  /// Verbatim allegation. Always an unverified allegation, never a finding.
+  allegationText String
+  claimedEvidence String?
+  /// Hash of normalized text, for duplicate suppression without storing identity.
+  contentHash    String
+  /// Coarse, salted submission fingerprint for rate limiting. Not an identity.
+  submissionFingerprint String?
+  status         TipStatus @default(RECEIVED)
+  duplicateOfId  String?
+  reviewNote     String?
+  reviewedByUserId String?
+  reviewedAt     DateTime?
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  case         Case?        @relation(fields: [caseId], references: [id], onDelete: SetNull)
+
+  @@unique([organizationId, contentHash])
+  @@index([organizationId, status])
+}
+
+// ---------------------------------------------------------------- audit & retention
+
+/// Append-only. `hash` chains over `prevHash` so silent tampering is detectable.
+model AuditEvent {
+  id             String    @id @default(cuid())
+  organizationId String
+  caseId         String?
+  actorType      ActorType
+  actorUserId    String?
+  /// Stable verb, e.g. CASE_VIEWED, CLAIM_STATUS_CHANGED, REPORT_EXPORTED.
+  action         String
+  entityType     String
+  entityId       String?
+  metadata       Json      @default("{}")
+  createdAt      DateTime  @default(now())
+  /// Monotonic per-organization sequence, assigned inside the write transaction.
+  sequence       Int
+  prevHash       String
+  hash           String
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  case         Case?        @relation(fields: [caseId], references: [id], onDelete: SetNull)
+  actor        User?        @relation(fields: [actorUserId], references: [id])
+
+  @@unique([organizationId, sequence])
+  @@index([caseId, createdAt])
+  @@index([organizationId, action])
+}
+
+model RetentionRule {
+  id             String          @id @default(cuid())
+  organizationId String
+  policyTemplateId String?
+  name           String
+  action         RetentionAction
+  /// Days after case closure before the action applies.
+  afterDaysFromClosure Int
+  isActive       Boolean         @default(true)
+  lastRunAt      DateTime?
+  createdAt      DateTime        @default(now())
+
+  organization   Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  policyTemplate PolicyTemplate? @relation(fields: [policyTemplateId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId])
+}
+
+/// Simple durable rate-limit counter (login, tip intake, portal submissions).
+model RateLimitCounter {
+  id        String   @id @default(cuid())
+  bucketKey String   @unique
+  count     Int      @default(0)
+  windowEndsAt DateTime
+
+  @@index([windowEndsAt])
+}

@@ -233,14 +233,40 @@ export function rangeOverlap(a: DateRange, b: DateRange, asOf: Date = new Date()
   if (ms <= 0) return { overlaps: false, days: 0, ambiguousDueToPrecision: false };
 
   const days = Math.floor(ms / DAY_MS);
-  const coarse =
-    PRECISION_RANK[a.precision] >= PRECISION_RANK['MONTH'] && PRECISION_RANK[b.precision] >= PRECISION_RANK['MONTH'];
 
-  // With two month-or-coarser ranges, an overlap shorter than the coarser unit
-  // tells us nothing. Treat it as ambiguous rather than as a conflict.
-  const ambiguous = coarse && days < 31;
+  // An overlap is only evidence of anything if it exceeds the measurement
+  // uncertainty of the coarser of the two ranges.
+  //
+  // This matters more than it looks. "Analyst, Halcyon (2020 - 2022)" followed
+  // by "Analyst, Brightwater (2022 - 2024)" produces a full year of apparent
+  // overlap, because year-precision dates expand to whole calendar years. It
+  // almost always means "left during 2022, joined during 2022" — a handover,
+  // not twelve months of simultaneous full-time employment. A flat threshold
+  // flags it; comparing against the uncertainty window does not.
+  const uncertainty = Math.max(uncertaintyDays(a.precision), uncertaintyDays(b.precision));
+  const ambiguous = days <= uncertainty;
 
   return { overlaps: true, days, ambiguousDueToPrecision: ambiguous };
+}
+
+/**
+ * How many days of apparent overlap a stated precision can manufacture on its
+ * own. A year-precision range says nothing about which months within the year
+ * are covered, so up to a full year of overlap can be an artefact.
+ */
+function uncertaintyDays(precision: Precision): number {
+  switch (precision) {
+    case 'DAY':
+      return 1;
+    case 'MONTH':
+      return 31;
+    case 'RANGE_APPROXIMATE':
+      return 92;
+    case 'YEAR':
+      return 365;
+    case 'UNKNOWN':
+      return Number.POSITIVE_INFINITY;
+  }
 }
 
 /** Inclusive whole-day duration of a range, or null when unbounded. */

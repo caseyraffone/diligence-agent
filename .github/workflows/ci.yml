@@ -27,21 +27,21 @@ jobs:
       postgres:
         image: postgres:16-alpine
         env:
-          POSTGRES_USER: cia
-          POSTGRES_PASSWORD: cia_local_dev
-          POSTGRES_DB: cia_dev
+          POSTGRES_USER: corroborate
+          POSTGRES_PASSWORD: corroborate_local_dev
+          POSTGRES_DB: corroborate_dev
         ports:
           - 5432:5432
         options: >-
-          --health-cmd "pg_isready -U cia -d cia_dev"
+          --health-cmd "pg_isready -U corroborate -d corroborate_dev"
           --health-interval 5s
           --health-timeout 5s
           --health-retries 20
 
     env:
       NODE_ENV: test
-      DATABASE_URL: postgresql://cia:cia_local_dev@127.0.0.1:5432/cia_dev?schema=public
-      TEST_DATABASE_URL: postgresql://cia:cia_local_dev@127.0.0.1:5432/cia_test?schema=public
+      DATABASE_URL: postgresql://corroborate:corroborate_local_dev@127.0.0.1:5432/corroborate_dev?schema=public
+      TEST_DATABASE_URL: postgresql://corroborate:corroborate_local_dev@127.0.0.1:5432/corroborate_test?schema=public
       # Non-secret, CI-only values. Real deployments generate their own.
       APP_SECRET: ci-only-not-a-secret-value-padded-to-length-000000
       DOCUMENT_ENCRYPTION_KEY: ci-only-not-a-secret-key-0000000
@@ -64,7 +64,7 @@ jobs:
         run: npm ci
 
       - name: Create test database
-        run: PGPASSWORD=cia_local_dev psql -h 127.0.0.1 -U cia -d cia_dev -c 'CREATE DATABASE cia_test OWNER cia;'
+        run: PGPASSWORD=corroborate_local_dev psql -h 127.0.0.1 -U corroborate -d corroborate_dev -c 'CREATE DATABASE corroborate_test OWNER corroborate;'
 
       - name: Validate Prisma schema
         run: npm run prisma:validate
@@ -103,20 +103,20 @@ jobs:
       postgres:
         image: postgres:16-alpine
         env:
-          POSTGRES_USER: cia
-          POSTGRES_PASSWORD: cia_local_dev
-          POSTGRES_DB: cia_dev
+          POSTGRES_USER: corroborate
+          POSTGRES_PASSWORD: corroborate_local_dev
+          POSTGRES_DB: corroborate_dev
         ports:
           - 5432:5432
         options: >-
-          --health-cmd "pg_isready -U cia -d cia_dev"
+          --health-cmd "pg_isready -U corroborate -d corroborate_dev"
           --health-interval 5s
           --health-timeout 5s
           --health-retries 20
 
     env:
       NODE_ENV: production
-      DATABASE_URL: postgresql://cia:cia_local_dev@127.0.0.1:5432/cia_dev?schema=public
+      DATABASE_URL: postgresql://corroborate:corroborate_local_dev@127.0.0.1:5432/corroborate_dev?schema=public
       APP_SECRET: ci-only-not-a-secret-value-padded-to-length-000000
       DOCUMENT_ENCRYPTION_KEY: ci-only-not-a-secret-key-0000000
       APP_BASE_URL: http://localhost:3200

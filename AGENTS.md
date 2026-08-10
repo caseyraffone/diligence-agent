@@ -1,4 +1,4 @@
-# AGENTS.md — Credential Integrity Agent
+# AGENTS.md — Corroborate Agent
 
 Canonical engineering instructions for this repository. Claude Code, OpenAI
 Codex, and any other coding agent must read and follow this file. Human
@@ -11,7 +11,7 @@ than silently resolving it.
 
 ## 1. What this product is, and what it must never become
 
-Credential Integrity Agent is **investigative decision-support** for authorized
+Corroborate Agent is **investigative decision-support** for authorized
 reviewers verifying factual claims in applications, résumés, and supporting
 documents.
 

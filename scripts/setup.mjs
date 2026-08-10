@@ -22,7 +22,7 @@ function capture(command, args) {
   return execFileSync(command, args, { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
 }
 
-console.log('▸ Credential Integrity Agent — setup\n');
+console.log('▸ Corroborate Agent — setup\n');
 
 // 1. Ensure a .env exists. The example defaults need no API keys.
 if (!existsSync(join(root, '.env'))) {

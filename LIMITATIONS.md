@@ -1,6 +1,6 @@
 # LIMITATIONS
 
-Read this before using Credential Integrity Agent on a real application. It is
+Read this before using Corroborate Agent on a real application. It is
 not a disclaimer appended for form's sake — it describes what this software
 cannot do, and the specific ways a reasonable person could misread its output to
 someone's serious detriment.

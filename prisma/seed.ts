@@ -43,7 +43,7 @@ const prisma = new PrismaClient();
 const DEMO_PASSWORD = 'DemoReviewer!2026';
 
 async function main(): Promise<void> {
-  console.log('▸ Seeding Credential Integrity Agent\n');
+  console.log('▸ Seeding Corroborate Agent\n');
 
   await reset();
   const roles = await seedRoles();

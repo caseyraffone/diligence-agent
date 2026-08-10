@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Credential Integrity Agent',
+  title: 'Corroborate Agent',
   description:
     'Investigative decision-support for authorized verification of factual claims in applications and résumés.',
   robots: { index: false, follow: false },

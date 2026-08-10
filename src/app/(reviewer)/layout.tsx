@@ -31,7 +31,7 @@ export default async function ReviewerLayout({ children }: { children: React.Rea
 
       <nav className="sidebar" aria-label="Primary">
         <a href="/" className="brand">
-          Credential Integrity Agent
+          Corroborate Agent
         </a>
         <span className="brand-sub">Decision-support · not a decision system</span>
 

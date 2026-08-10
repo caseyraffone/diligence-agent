@@ -2,7 +2,7 @@ import { prisma } from '@/lib/prisma';
 import { randomToken, sha256, hmac, safeEqual } from '@/lib/crypto';
 import { permissionsFor, type Permission, type RoleKey } from './permissions';
 
-export const SESSION_COOKIE = 'corroborate_session';
+export const SESSION_COOKIE = 'diligence_session';
 export const CSRF_HEADER = 'x-csrf-token';
 const SESSION_TTL_MS = 12 * 60 * 60 * 1000; // 12 hours
 const IDLE_REFRESH_MS = 15 * 60 * 1000;

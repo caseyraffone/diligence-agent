@@ -52,5 +52,5 @@ export function cacheClear(): void {
 /** Identifying User-Agent, required by the open APIs' access policies. */
 export function liveUserAgent(): string {
   const env = getEnv();
-  return `CorroborateAgent/0.1 (mailto:${env.LIVE_SOURCE_CONTACT_EMAIL ?? 'unknown'})`;
+  return `DiligenceAgent/0.1 (mailto:${env.LIVE_SOURCE_CONTACT_EMAIL ?? 'unknown'})`;
 }

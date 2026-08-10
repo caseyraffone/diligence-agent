@@ -1,4 +1,4 @@
-// Corroborate Agent — data model.
+// Diligence Agent — data model.
 //
 // Design rules encoded here:
 //  * Every case-scoped row carries `organizationId` so tenant isolation can be

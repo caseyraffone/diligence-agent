@@ -1,4 +1,4 @@
-# Corroborate Agent
+# Diligence Agent
 
 Investigative decision-support for authorised teams verifying factual claims in
 applications, résumés, transcripts, and supporting documents.
@@ -44,8 +44,8 @@ finding. Those boundaries are enforced in code, not just in documentation — se
 Requires **Node 22 LTS** (`>=22.11 <23`) and **PostgreSQL 16**.
 
 ```bash
-git clone <your-remote> corroborate-agent
-cd corroborate-agent
+git clone <your-remote> diligence-agent
+cd diligence-agent
 npm install
 cp .env.example .env
 
@@ -66,17 +66,17 @@ Any PostgreSQL 16 will do. On Debian/Ubuntu:
 
 ```bash
 sudo apt install postgresql-16
-sudo -u postgres psql -c "CREATE ROLE corroborate LOGIN PASSWORD 'corroborate_local_dev' CREATEDB;"
-sudo -u postgres psql -c "CREATE DATABASE corroborate_dev OWNER corroborate;"
-sudo -u postgres psql -c "CREATE DATABASE corroborate_test OWNER corroborate;"
+sudo -u postgres psql -c "CREATE ROLE diligence LOGIN PASSWORD 'diligence_local_dev' CREATEDB;"
+sudo -u postgres psql -c "CREATE DATABASE diligence_dev OWNER diligence;"
+sudo -u postgres psql -c "CREATE DATABASE diligence_test OWNER diligence;"
 ```
 
 macOS with Homebrew:
 
 ```bash
 brew install postgresql@16 && brew services start postgresql@16
-createuser corroborate --createdb && createdb corroborate_dev -O corroborate && createdb corroborate_test -O corroborate
-psql -d corroborate_dev -c "ALTER ROLE corroborate PASSWORD 'corroborate_local_dev';"
+createuser diligence --createdb && createdb diligence_dev -O diligence && createdb diligence_test -O diligence
+psql -d diligence_dev -c "ALTER ROLE diligence PASSWORD 'diligence_local_dev';"
 ```
 
 Then point `DATABASE_URL` and `TEST_DATABASE_URL` in `.env` at them. The two

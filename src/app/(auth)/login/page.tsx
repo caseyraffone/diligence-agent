@@ -69,7 +69,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
   return (
     <main className="portal">
       <div className="portal-head">
-        <h1>Corroborate Agent</h1>
+        <h1>Diligence Agent</h1>
         <p className="muted">
           Investigative decision-support for authorised verification teams. Access is restricted to named reviewers, and
           every action you take in this system is logged.

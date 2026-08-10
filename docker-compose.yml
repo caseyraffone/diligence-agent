@@ -10,24 +10,24 @@
 services:
   db:
     image: postgres:16-alpine
-    container_name: corroborate-postgres
+    container_name: diligence-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_USER: corroborate
-      POSTGRES_PASSWORD: corroborate_local_dev
-      POSTGRES_DB: corroborate_dev
+      POSTGRES_USER: diligence
+      POSTGRES_PASSWORD: diligence_local_dev
+      POSTGRES_DB: diligence_dev
     ports:
       - '5432:5432'
     volumes:
-      - corroborate-pgdata:/var/lib/postgresql/data
+      - diligence-pgdata:/var/lib/postgresql/data
       # Creates the separate test database on first boot so `npm test` has a
       # throwaway target that is never the development database.
       - ./scripts/init-test-db.sql:/docker-entrypoint-initdb.d/10-init-test-db.sql:ro
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U corroborate -d corroborate_dev']
+      test: ['CMD-SHELL', 'pg_isready -U diligence -d diligence_dev']
       interval: 5s
       timeout: 5s
       retries: 20
 
 volumes:
-  corroborate-pgdata:
+  diligence-pgdata:

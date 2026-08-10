@@ -165,9 +165,13 @@ export default async function ClaimsPage({
       {claims.map((claim) => {
         const plan = buildVerificationPlan(claim, record.policyTemplate.approvedSourceKeys);
         const latestDecision = claim.decisions[0];
-        const supporting = claim.evidenceItems.filter((e) => e.relation === 'SUPPORTING');
-        const conflicting = claim.evidenceItems.filter((e) => e.relation === 'CONFLICTING');
-        const neutral = claim.evidenceItems.filter((e) => e.relation === 'NEUTRAL');
+        // Evidence about the organisation is presented apart from evidence about
+        // the claim, and never counted toward it.
+        const orgContext = claim.evidenceItems.filter((e) => e.scope === 'ORGANIZATION_CONTEXT');
+        const claimEvidence = claim.evidenceItems.filter((e) => e.scope !== 'ORGANIZATION_CONTEXT');
+        const supporting = claimEvidence.filter((e) => e.relation === 'SUPPORTING');
+        const conflicting = claimEvidence.filter((e) => e.relation === 'CONFLICTING');
+        const neutral = claimEvidence.filter((e) => e.relation === 'NEUTRAL');
 
         return (
           <section className="card" key={claim.id} id={claim.id}>
@@ -209,7 +213,7 @@ export default async function ClaimsPage({
                   </tr>
                 </thead>
                 <tbody>
-                  {claim.evidenceItems.map((e) => (
+                  {claimEvidence.map((e) => (
                     <tr key={e.id}>
                       <td>
                         <Pill
@@ -250,7 +254,7 @@ export default async function ClaimsPage({
                       </td>
                     </tr>
                   ))}
-                  {claim.evidenceItems.length === 0 ? (
+                  {claimEvidence.length === 0 ? (
                     <tr>
                       <td colSpan={5}>
                         <EmptyState>No source has been consulted for this claim yet.</EmptyState>
@@ -260,6 +264,31 @@ export default async function ClaimsPage({
                 </tbody>
               </table>
             </div>
+
+            {/* --------------------------------------------- organisation context */}
+            {orgContext.length > 0 ? (
+              <>
+                <h3>Organisation context</h3>
+                <div className="notice small">
+                  <strong>About the organisation, not about the applicant</strong>
+                  Public registries can confirm that an organisation exists and is registered. No public register
+                  records who worked or studied somewhere, so nothing below speaks to this claim. It is shown as context
+                  and is deliberately excluded from the verification status.
+                </div>
+                <ul className="small">
+                  {orgContext.map((e) => (
+                    <li key={e.id}>
+                      <ResultPill result={e.sourceCheck?.result ?? 'INCONCLUSIVE'} />{' '}
+                      <strong>{e.sourceCheck?.adapterKey ?? 'registry'}</strong> — {e.summary}
+                      {e.sourceCheck?.excerpt ? (
+                        <blockquote className="quote small">“{e.sourceCheck.excerpt}”</blockquote>
+                      ) : null}
+                      <div className="muted">{e.detail}</div>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            ) : null}
 
             {/* --------------------------------------------- verification plan */}
             <h3>Verification plan</h3>

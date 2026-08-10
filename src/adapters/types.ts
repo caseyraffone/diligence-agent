@@ -64,12 +64,24 @@ export type IntegrationStatus =
   /** Interface and fixtures only; production access needs work beyond code. */
   | 'PLACEHOLDER';
 
+/**
+ * What an adapter's output actually establishes.
+ *
+ * `ORGANIZATION_EXISTENCE` adapters confirm the organisation named in a claim is
+ * real and registered. They say nothing about whether the applicant was ever
+ * engaged there, so their evidence is recorded as ORGANIZATION_CONTEXT and is
+ * excluded from the status proposal.
+ */
+export type AdapterVerifies = 'CLAIM' | 'ORGANIZATION_EXISTENCE';
+
 export interface SourceAdapter {
   readonly key: string;
   readonly name: string;
   readonly authorityLevel: AuthorityLevel;
   readonly supportedCategories: ClaimCategory[];
   readonly integrationStatus: IntegrationStatus;
+  /** Defaults to CLAIM when an adapter does not declare it. */
+  readonly verifies?: AdapterVerifies;
   /**
    * What production access actually requires — credentials, a contract, a
    * jurisdiction-specific legal basis. Surfaced in the admin UI so an operator

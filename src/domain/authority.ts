@@ -1,4 +1,11 @@
-import { AuthorityLevel, EvidenceRelation, SourceCheckResult, StatementType, ClaimStatus } from '@prisma/client';
+import {
+  AuthorityLevel,
+  EvidenceRelation,
+  EvidenceScope,
+  SourceCheckResult,
+  StatementType,
+  ClaimStatus,
+} from '@prisma/client';
 
 /**
  * The source hierarchy and the evidence-to-status proposal logic.
@@ -60,6 +67,11 @@ export interface EvidenceSummaryInput {
   relation: EvidenceRelation;
   statementType: StatementType;
   authorityLevel: AuthorityLevel;
+  /**
+   * Defaults to CLAIM. ORGANIZATION_CONTEXT evidence — "this employer is a real
+   * registered company" — is excluded from the proposal entirely.
+   */
+  scope?: EvidenceScope;
 }
 
 export interface StatusProposal {
@@ -81,7 +93,16 @@ export interface StatusProposal {
  *  - No supporting and no conflicting evidence yields UNABLE_TO_VERIFY, framed
  *    explicitly as an evidence gap rather than a negative finding.
  */
-export function proposeStatus(evidence: EvidenceSummaryInput[]): StatusProposal {
+export function proposeStatus(allEvidence: EvidenceSummaryInput[]): StatusProposal {
+  // Evidence about the ORGANISATION is not evidence about the CLAIM.
+  //
+  // "Star Mountain Capital is a registered legal entity" is machine-checkable
+  // and true. "This applicant was a summer analyst there" is neither confirmed
+  // nor denied by it — no public register records employment. Letting the first
+  // feed this function would manufacture confidence with no basis, which is the
+  // precise failure this product exists to avoid.
+  const evidence = allEvidence.filter((e) => (e.scope ?? EvidenceScope.CLAIM) === EvidenceScope.CLAIM);
+
   const supporting = evidence.filter((e) => e.relation === EvidenceRelation.SUPPORTING);
   const conflicting = evidence.filter((e) => e.relation === EvidenceRelation.CONFLICTING);
 

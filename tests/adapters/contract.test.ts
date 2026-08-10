@@ -128,7 +128,21 @@ describe('registry', () => {
       .filter((a) => a.integrationStatus === 'LIVE_CAPABLE')
       .map((a) => a.key)
       .sort();
-    expect(live).toEqual(['crossref', 'pubmed']);
+    // Adding to this list means asserting the source is genuinely open: no key,
+    // no contract, and automated access permitted by its terms.
+    expect(live).toEqual(['crossref', 'gleif', 'pubmed', 'ror']);
+  });
+
+  it('declares which adapters speak to the organisation rather than to the claim', () => {
+    const orgOnly = allAdapters()
+      .filter((a) => a.verifies === 'ORGANIZATION_EXISTENCE')
+      .map((a) => a.key)
+      .sort();
+    expect(orgOnly).toEqual(['gleif', 'ror']);
+
+    for (const adapter of allAdapters()) {
+      expect(adapter.verifies ?? 'CLAIM').toMatch(/^(CLAIM|ORGANIZATION_EXISTENCE)$/);
+    }
   });
 });
 

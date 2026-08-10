@@ -67,6 +67,8 @@ export const POLICY_TEMPLATES: PolicyTemplateSeed[] = [
       'orcid',
       'athletic-roster',
       'web-archive',
+      'ror',
+      'gleif',
     ],
     evidenceRequirements: {
       minAuthorityForVerified: 'L3_AUTHORIZED_REPRESENTATIVE',
@@ -106,6 +108,12 @@ export const POLICY_TEMPLATES: PolicyTemplateSeed[] = [
       'license-registry',
       'patent-registry',
       'web-archive',
+      // Organisation-existence sources. These corroborate that the employer is
+      // a real registered entity; they never speak to the engagement itself.
+      'gleif',
+      'ror',
+      // A DOI on an employment case is worth resolving when one is present.
+      'crossref',
     ],
     evidenceRequirements: {
       minAuthorityForVerified: 'L3_AUTHORIZED_REPRESENTATIVE',

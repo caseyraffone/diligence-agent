@@ -1,6 +1,7 @@
 import type { ClaimCategory } from '@prisma/client';
 import type { AdapterClaimInput, SourceAdapter } from './types';
 import { CrossrefAdapter } from './crossref';
+import { GleifOrganizationAdapter, RorOrganizationAdapter } from './organizationRegistry';
 import { PubMedAdapter } from './pubmed';
 import {
   AthleticRosterAdapter,
@@ -22,6 +23,8 @@ import {
 const ADAPTERS: SourceAdapter[] = [
   new CrossrefAdapter(),
   new PubMedAdapter(),
+  new GleifOrganizationAdapter(),
+  new RorOrganizationAdapter(),
   new OrcidAdapter(),
   new UniversityRegistrarAdapter(),
   new EmployerConfirmationAdapter(),

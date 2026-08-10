@@ -126,6 +126,30 @@ enum EvidenceRelation {
   NEUTRAL
 }
 
+/// What a piece of evidence actually speaks to.
+///
+/// The distinction this encodes is the difference between a useful verification
+/// tool and a dangerous one:
+///
+///   "Star Mountain Capital is a real, registered legal entity"  — machine-checkable
+///   "This applicant was a summer analyst there"                 — not machine-checkable
+///
+/// Public registries can settle the first and can say nothing about the second.
+/// There is no public record of who interned where, and no amount of searching
+/// creates one. Conflating the two would let an organisation lookup silently
+/// corroborate an employment claim it never addressed.
+///
+/// Only CLAIM-scoped evidence feeds the status proposal.
+/// ORGANIZATION_CONTEXT is displayed to reviewers as context and is excluded
+/// from it by `proposeStatus`.
+enum EvidenceScope {
+  /// Speaks to the claim itself — that this person did this thing.
+  CLAIM
+  /// Speaks only to the organisation named in the claim: that it exists, is
+  /// registered, and matches the description. Says nothing about the applicant.
+  ORGANIZATION_CONTEXT
+}
+
 /// The report must never blur these. Every evidence row is typed.
 enum StatementType {
   CONFIRMED_FACT
@@ -562,6 +586,9 @@ model EvidenceItem {
   caseId         String
   claimId        String
   relation       EvidenceRelation
+  /// What this evidence actually speaks to. This is the field that stops
+  /// "the company exists" from being read as "they worked there".
+  scope          EvidenceScope    @default(CLAIM)
   statementType  StatementType
   authorityLevel AuthorityLevel
   summary        String

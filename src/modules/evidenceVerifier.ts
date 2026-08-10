@@ -4,6 +4,7 @@ import {
   ClaimStatus,
   ConsentScope,
   EvidenceRelation,
+  EvidenceScope,
   SourceCheckResult,
   StatementType,
   type ExtractedClaim,
@@ -156,15 +157,21 @@ export async function runSourceCheck(input: RunSourceCheckInput): Promise<RunSou
   const relation = relationForResult(outcome.result);
   const statementType = statementTypeForResult(outcome.result, outcome.authorityLevel);
 
+  // An organisation-existence adapter speaks only to the organisation, so its
+  // evidence is scoped out of the status proposal. See EvidenceScope.
+  const scope =
+    adapter.verifies === 'ORGANIZATION_EXISTENCE' ? EvidenceScope.ORGANIZATION_CONTEXT : EvidenceScope.CLAIM;
+
   await prisma.evidenceItem.create({
     data: {
       organizationId: input.organizationId,
       caseId: claim.caseId,
       claimId: claim.id,
       relation,
+      scope,
       statementType,
       authorityLevel: outcome.authorityLevel,
-      summary: summarize(adapter.name, outcome.result),
+      summary: summarize(adapter.name, outcome.result, scope),
       detail: outcome.detail,
       sourceCheckId: sourceCheck.id,
       createdByUserId: input.actorUserId,
@@ -217,6 +224,7 @@ export async function recomputeClaimProposal(
       relation: e.relation,
       statementType: e.statementType,
       authorityLevel: e.authorityLevel,
+      scope: e.scope,
     })),
   );
 
@@ -292,7 +300,23 @@ export async function attachApplicantEvidence(input: {
   return evidence.id;
 }
 
-function summarize(adapterName: string, result: SourceCheckResult): string {
+function summarize(adapterName: string, result: SourceCheckResult, scope: EvidenceScope): string {
+  // Organisation-scoped evidence must never be summarised as confirming the
+  // claim. "GLEIF confirms this claim" would tell a reviewer the internship
+  // checked out, when all that was confirmed is that the firm exists.
+  if (scope === EvidenceScope.ORGANIZATION_CONTEXT) {
+    switch (result) {
+      case SourceCheckResult.MATCH:
+        return `${adapterName} confirms the organisation exists and is registered. It does not address the applicant's engagement there.`;
+      case SourceCheckResult.PARTIAL_MATCH:
+        return `${adapterName} found a similarly named organisation, but not close enough to be certain it is the same one.`;
+      case SourceCheckResult.RECORD_NOT_FOUND:
+        return `${adapterName} holds no entry for this organisation. Its register does not cover every legitimate organisation.`;
+      default:
+        return `${adapterName} could not be consulted about this organisation.`;
+    }
+  }
+
   switch (result) {
     case SourceCheckResult.MATCH:
       return `${adapterName} confirms this claim.`;

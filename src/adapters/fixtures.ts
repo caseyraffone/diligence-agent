@@ -134,6 +134,55 @@ export const FIXTURES: FixtureRecord[] = [
       'author. Author order conventions vary by field and by group.',
   },
 
+  // ------------------------------------------- organisation existence (offline)
+  // Demonstrates the central distinction: the firm is confirmed real, while the
+  // engagement remains unverifiable by any public source.
+  {
+    adapterKey: 'gleif',
+    match: { organization: 'Star Mountain Capital' },
+    result: SourceCheckResult.MATCH,
+    url: 'https://search.gleif.org/',
+    excerpt:
+      'LEI 5493001KJTIIGC8Y1R12 — STAR MOUNTAIN CAPITAL EXAMPLE LLC, New York, US. Entity status: ACTIVE. ' +
+      'Registration status: ISSUED.',
+    detail:
+      'The organisation named in this claim is a registered legal entity. This confirms the organisation exists ' +
+      'and is registered. It does NOT address whether the applicant was engaged there — no public register records ' +
+      'employment. Confirming the engagement requires the employer.',
+  },
+  {
+    adapterKey: 'gleif',
+    match: { organization: 'Northwind Analytics' },
+    result: SourceCheckResult.MATCH,
+    url: 'https://search.gleif.org/',
+    excerpt: 'LEI 549300EXAMPLE0NW1234 — NORTHWIND ANALYTICS LLC, Boston, US. Entity status: ACTIVE.',
+    detail:
+      "The employer named in this claim is a registered legal entity. This does not address the applicant's " +
+      'engagement there.',
+  },
+  {
+    adapterKey: 'ror',
+    match: { organization: 'Riverton State University' },
+    result: SourceCheckResult.MATCH,
+    url: 'https://ror.org/',
+    excerpt:
+      'Riverton State University — United States, established 1891. ROR id https://ror.org/00example1. ' +
+      'Status: active. Also known as: RSU.',
+    detail:
+      'The institution named in this claim is a registered educational organisation. ROR holds no enrolment ' +
+      'records, so this does not address whether the applicant studied there.',
+  },
+  {
+    adapterKey: 'ror',
+    match: { organization: 'Lagos International College' },
+    result: SourceCheckResult.RECORD_NOT_FOUND,
+    url: 'https://ror.org/',
+    excerpt: null,
+    detail:
+      'ROR holds no institution matching this name. ROR covers research and higher-education organisations, so ' +
+      'secondary schools are expected to be absent. This does not indicate the institution is not real.',
+  },
+
   // ---------------------------------------------------------------- adversarial
   {
     // Ambiguous name: a real record exists but cannot be tied to this person.

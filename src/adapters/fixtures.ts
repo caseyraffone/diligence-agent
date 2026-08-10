@@ -86,6 +86,16 @@ export const FIXTURES: FixtureRecord[] = [
       'employment history.',
   },
   {
+    // Ordered before the generic Riverton entry: findFixture returns the first
+    // match, so the degree-specific record must be reachable.
+    adapterKey: 'university-registrar',
+    match: { organization: 'Riverton State University', textIncludes: 'economics' },
+    result: SourceCheckResult.MATCH,
+    url: null,
+    excerpt: 'Registrar confirms B.S. Economics conferred 2024-05-18. Enrolment 2020-08 to 2024-05.',
+    detail: 'Degree, field, and conferral date match the claim.',
+  },
+  {
     adapterKey: 'university-registrar',
     match: { organization: 'Riverton State University' },
     result: SourceCheckResult.MATCH,

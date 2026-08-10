@@ -22,7 +22,8 @@
     "test": "node scripts/test.mjs",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
-    "verify": "npm run format:check && npm run lint && npm run typecheck && npm run prisma:validate && npm run test && npm run build"
+    "verify": "npm run format:check && npm run lint && npm run typecheck && npm run prisma:validate && npm run test && npm run build",
+    "demo": "tsx prisma/demo.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

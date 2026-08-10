@@ -19,6 +19,49 @@ built not to be.
 
 ## Now — blocks a serious pilot
 
+### 0. Live source breadth — the gap between the demo and the pitch
+
+Today exactly two adapters make real network calls (Crossref, PubMed), and both
+need a DOI. Everything else serves fixtures. Drop in a résumé saying "Summer
+Analyst Intern, Star Mountain Capital" and the honest output is
+`UNABLE_TO_VERIFY` — correct behaviour, but it is not what a buyer watching a
+demo believes they are seeing.
+
+Two things must not get conflated when closing this:
+
+**(a) Verifying the organisation exists and is what it claims — achievable now,
+with free open registries.** No agreements needed:
+
+- **GLEIF LEI** — open, global legal-entity registry.
+- **SEC EDGAR / IAPD** — free, no key; confirms US registered investment
+  advisers, broker-dealers, and public filers. Would confirm Star Mountain
+  Capital is a real SEC-registered adviser.
+- **ROR** — open registry of research organisations.
+- **Companies House (UK)**, **OpenCorporates** (key required for volume).
+- **OpenAlex** — open, far broader coverage than Crossref, includes institutions.
+- **USPTO PatentsView** — free key.
+- **NPI registry** — free, verifies US healthcare providers.
+- **Wayback Machine availability API** — for what an official page said at a date.
+
+This turns "we found nothing" into "the organisation is confirmed real and
+registered; the specific engagement still needs employer confirmation." That is
+a genuine, honest intermediate signal and a large share of the perceived value.
+
+**(b) Verifying the specific engagement — mostly NOT solvable by searching the
+internet, ever.** There is no public record of who interned where. No amount of
+crawling establishes it. The real channels are a contracted verification service
+(Work Number and similar) or the outreach workflow already built. Science-fair
+results are in between: some organisers publish standings, but there is no
+unified API, coverage is per-organiser, and older results routinely vanish.
+
+Ship (a). Be explicit in the UI that (b) requires outreach. Do not let a demo
+imply otherwise — a verification product that oversells its coverage produces
+exactly the false confidence this whole design exists to prevent.
+
+Also fix while here: the job-application policy does not approve `crossref` or
+`pubmed`, so a DOI on an employment case is never even attempted. Defensible,
+but it should be a deliberate configuration choice rather than an accident.
+
 ### 1. FCRA adverse-action workflow
 
 **The single biggest legal gap for employment use.** In the US, where a

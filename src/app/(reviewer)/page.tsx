@@ -145,9 +145,9 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
       <div className="page-head">
         <h1>Case queue</h1>
         <p>
-          Cases for {actor.roleKey === 'READ_ONLY_AUDITOR' ? 'review (read-only)' : 'your organisation'}, ordered by
-          how much unresolved uncertainty a reviewer could clear. Ordering uses evidence gaps and unresolved
-          differences only — never anything about the applicant.
+          Cases for {actor.roleKey === 'READ_ONLY_AUDITOR' ? 'review (read-only)' : 'your organisation'}, ordered by how
+          much unresolved uncertainty a reviewer could clear. Ordering uses evidence gaps and unresolved differences
+          only — never anything about the applicant.
         </p>
       </div>
 
@@ -164,7 +164,13 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
         <div className="row">
           <div>
             <label htmlFor="q">Search</label>
-            <input id="q" name="q" type="search" defaultValue={filters.q ?? ''} placeholder="Reference, title, or applicant" />
+            <input
+              id="q"
+              name="q"
+              type="search"
+              defaultValue={filters.q ?? ''}
+              placeholder="Reference, title, or applicant"
+            />
           </div>
           <div>
             <label htmlFor="status">Case status</label>
@@ -229,7 +235,10 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
                 <td className="small">{formatDate(c.dueDate)}</td>
                 <td>
                   <abbr
-                    title={c.priority.contributions.map((x) => `${x.points}: ${x.explanation}`).join('\n') || 'No outstanding factors'}
+                    title={
+                      c.priority.contributions.map((x) => `${x.points}: ${x.explanation}`).join('\n') ||
+                      'No outstanding factors'
+                    }
                     style={{ textDecoration: 'none', borderBottom: '1px dotted currentColor', cursor: 'help' }}
                   >
                     {c.priority.score}

@@ -36,7 +36,8 @@ async function signIn(formData: FormData): Promise<void> {
 
   // Always run a verification, even for an unknown address, so response timing
   // does not reveal whether an account exists.
-  const stored = user?.passwordHash ?? '$scrypt$32768$8$1$AAAAAAAAAAAAAAAAAAAAAA==$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=';
+  const stored =
+    user?.passwordHash ?? '$scrypt$32768$8$1$AAAAAAAAAAAAAAAAAAAAAA==$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=';
   const ok = await verifyPassword(password, stored);
 
   if (!user || !ok) redirect('/login?error=invalid');
@@ -70,8 +71,8 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
       <div className="portal-head">
         <h1>Credential Integrity Agent</h1>
         <p className="muted">
-          Investigative decision-support for authorised verification teams. Access is restricted to named reviewers,
-          and every action you take in this system is logged.
+          Investigative decision-support for authorised verification teams. Access is restricted to named reviewers, and
+          every action you take in this system is logged.
         </p>
       </div>
 

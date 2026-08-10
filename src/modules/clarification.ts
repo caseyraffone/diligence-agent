@@ -1,11 +1,22 @@
-import { ClaimStatus, ClarificationStatus, ConsentScope, EvidenceRelation, AuthorityLevel, StatementType } from '@prisma/client';
+import {
+  ClaimStatus,
+  ClarificationStatus,
+  ConsentScope,
+  EvidenceRelation,
+  AuthorityLevel,
+  StatementType,
+} from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { recordAudit } from '@/lib/audit/audit';
 import { getEnv } from '@/lib/env';
 import { issuePortalToken } from '@/lib/auth/portalToken';
 import { ConflictError, ValidationError } from '@/lib/errors';
 import { runStructured } from '@/providers/llm/client';
-import { ClarificationDraftResponseSchema, CLARIFICATION_DRAFT_HINT, findProhibitedCharacterizations } from '@/providers/llm/schemas';
+import {
+  ClarificationDraftResponseSchema,
+  CLARIFICATION_DRAFT_HINT,
+  findProhibitedCharacterizations,
+} from '@/providers/llm/schemas';
 import { recomputeClaimProposal } from './evidenceVerifier';
 
 /**
@@ -38,7 +49,9 @@ export async function draftClarification(input: DraftClarificationInput): Promis
       ? prisma.extractedClaim.findFirstOrThrow({ where: { id: input.claimId, organizationId: input.organizationId } })
       : null,
     input.discrepancyId
-      ? prisma.discrepancy.findFirstOrThrow({ where: { id: input.discrepancyId, organizationId: input.organizationId } })
+      ? prisma.discrepancy.findFirstOrThrow({
+          where: { id: input.discrepancyId, organizationId: input.organizationId },
+        })
       : null,
   ]);
 

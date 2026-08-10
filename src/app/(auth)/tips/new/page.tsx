@@ -56,7 +56,10 @@ const STATES: Record<string, { tone: string; text: string }> = {
 
 export default async function NewTipPage({ searchParams }: { searchParams: Promise<{ state?: string }> }) {
   const { state } = await searchParams;
-  const organizations = await prisma.organization.findMany({ orderBy: { name: 'asc' }, select: { slug: true, name: true } });
+  const organizations = await prisma.organization.findMany({
+    orderBy: { name: 'asc' },
+    select: { slug: true, name: true },
+  });
   const banner = state ? STATES[state] : null;
 
   return (
@@ -77,14 +80,14 @@ export default async function NewTipPage({ searchParams }: { searchParams: Promi
 
       <div className="notice">
         <strong>Please read before submitting</strong>
-        What you write is treated as an <em>unverified allegation</em>, not as evidence. It cannot change any
-        assessment by itself: a reviewer must independently establish anything that follows from it. The person
-        concerned will not be told who submitted this, and we do not record your name, email address, or IP address.
+        What you write is treated as an <em>unverified allegation</em>, not as evidence. It cannot change any assessment
+        by itself: a reviewer must independently establish anything that follows from it. The person concerned will not
+        be told who submitted this, and we do not record your name, email address, or IP address.
         <br />
         <br />
         Please describe only what you observed and what could be checked. Submissions about someone’s race, religion,
-        disability, health, sex, gender, sexual orientation, age, family circumstances, or immigration status are out
-        of scope and will be closed without being used.
+        disability, health, sex, gender, sexual orientation, age, family circumstances, or immigration status are out of
+        scope and will be closed without being used.
       </div>
 
       <form action={submit} className="card">
@@ -108,7 +111,9 @@ export default async function NewTipPage({ searchParams }: { searchParams: Promi
             maxLength={10000}
             placeholder="Describe what you observed, and where a reviewer might check it."
           />
-          <span className="hint">At least 20 characters. Facts that can be checked are far more useful than opinions.</span>
+          <span className="hint">
+            At least 20 characters. Facts that can be checked are far more useful than opinions.
+          </span>
         </div>
         <div className="field">
           <label htmlFor="claimedEvidence">Is there anything a reviewer could look at? (optional)</label>

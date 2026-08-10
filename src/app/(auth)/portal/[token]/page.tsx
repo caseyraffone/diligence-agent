@@ -102,9 +102,9 @@ export default async function PortalPage({
 
       {state === 'received' ? (
         <div className="notice" role="status">
-          <strong>Thank you — your response has been recorded</strong>
-          A reviewer will consider it alongside the other information on file. Your original application is unchanged;
-          your explanation has been added to the record, not substituted for anything.
+          <strong>Thank you — your response has been recorded</strong>A reviewer will consider it alongside the other
+          information on file. Your original application is unchanged; your explanation has been added to the record,
+          not substituted for anything.
         </div>
       ) : null}
       {state === 'invalid' ? (
@@ -161,9 +161,7 @@ export default async function PortalPage({
             <div key={r.id} style={{ borderTop: '1px solid var(--border)', paddingTop: '0.6rem', marginTop: '0.6rem' }}>
               <p className="small muted">{formatDateTime(r.submittedAt)}</p>
               <p style={{ whiteSpace: 'pre-wrap' }}>{r.message}</p>
-              {r.documentIds.length > 0 ? (
-                <p className="small muted">{r.documentIds.length} file(s) attached</p>
-              ) : null}
+              {r.documentIds.length > 0 ? <p className="small muted">{r.documentIds.length} file(s) attached</p> : null}
             </div>
           ))}
         </section>

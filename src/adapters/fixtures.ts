@@ -204,7 +204,8 @@ export const FIXTURES: FixtureRecord[] = [
  * nothing — which adapters translate to RECORD_NOT_FOUND, an evidence gap.
  */
 export function findFixture(adapterKey: string, claim: AdapterClaimInput, applicantName: string): FixtureRecord | null {
-  const claimDoi = extractDoi(claim.sourcePassage) ?? extractDoi(claim.normalizedText) ?? extractDoi(claim.amountUnit ?? '');
+  const claimDoi =
+    extractDoi(claim.sourcePassage) ?? extractDoi(claim.normalizedText) ?? extractDoi(claim.amountUnit ?? '');
   const claimText = normalizeText(`${claim.normalizedText} ${claim.sourcePassage}`);
 
   for (const fixture of FIXTURES) {

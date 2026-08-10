@@ -66,9 +66,7 @@ export async function ingestDocument(input: UploadDocumentInput): Promise<Upload
 
   if (input.bytes.byteLength === 0) throw new ValidationError('The uploaded file is empty.');
   if (input.bytes.byteLength > env.MAX_UPLOAD_BYTES) {
-    throw new ValidationError(
-      `File exceeds the ${Math.round(env.MAX_UPLOAD_BYTES / 1_048_576)} MiB limit.`,
-    );
+    throw new ValidationError(`File exceeds the ${Math.round(env.MAX_UPLOAD_BYTES / 1_048_576)} MiB limit.`);
   }
   if (!ALLOWED_MIME.has(input.declaredMimeType)) {
     throw new ValidationError(`File type ${input.declaredMimeType} is not accepted.`);
@@ -80,9 +78,7 @@ export async function ingestDocument(input: UploadDocumentInput): Promise<Upload
   if (expected) {
     const actual = Array.from(input.bytes.subarray(expected.offset, expected.offset + expected.bytes.length));
     if (!expected.bytes.every((b, i) => actual[i] === b)) {
-      throw new ValidationError(
-        `The file contents do not match the declared type ${input.declaredMimeType}.`,
-      );
+      throw new ValidationError(`The file contents do not match the declared type ${input.declaredMimeType}.`);
     }
   }
 
@@ -200,7 +196,8 @@ export async function ingestDocument(input: UploadDocumentInput): Promise<Upload
               {
                 kind: 'REDACTION',
                 observation: `${redactionsApplied} sensitive identifier(s) were masked in the extracted text.`,
-                whyItMayMatter: 'The original file still contains them and is stored encrypted under retention control.',
+                whyItMayMatter:
+                  'The original file still contains them and is stored encrypted under retention control.',
               },
             ]
           : []),

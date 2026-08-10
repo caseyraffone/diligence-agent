@@ -22,7 +22,11 @@ const nodeOptions = existsSync(envFile) ? ['--env-file', envFile] : [];
 
 const preload = execFileSync(
   process.execPath,
-  [...nodeOptions, '-e', 'process.stdout.write(JSON.stringify({t:process.env.TEST_DATABASE_URL||"",d:process.env.DATABASE_URL||""}))'],
+  [
+    ...nodeOptions,
+    '-e',
+    'process.stdout.write(JSON.stringify({t:process.env.TEST_DATABASE_URL||"",d:process.env.DATABASE_URL||""}))',
+  ],
   { cwd: root, encoding: 'utf8' },
 );
 

@@ -25,7 +25,7 @@ export class OrcidAdapter extends FixtureBackedAdapter {
   readonly integrationNote =
     'ORCID has a public API, but meaningful use requires the applicant to supply and authenticate their own ORCID iD ' +
     '(via ORCID OAuth) — matching a name to an iD without that step is unreliable and risks attaching the wrong ' +
-    'person\'s record. Production also needs an ORCID member client id/secret for the member API. Implement only ' +
+    "person's record. Production also needs an ORCID member client id/secret for the member API. Implement only " +
     'alongside an applicant-authenticated iD collection step.';
 }
 
@@ -67,7 +67,7 @@ export class AwardDatabaseAdapter extends FixtureBackedAdapter {
   readonly integrationStatus: IntegrationStatus = 'PLACEHOLDER';
   readonly integrationNote =
     'There is no unified results database; each competition publishes its own, in its own format, often as HTML or ' +
-    'PDF. Production means a per-organizer adapter, and only where the organizer\'s terms permit automated access. ' +
+    "PDF. Production means a per-organizer adapter, and only where the organizer's terms permit automated access. " +
     'Do not implement this as a generic scraper. Older results are frequently offline entirely — absence here is ' +
     'especially weak signal.';
 }
@@ -93,7 +93,7 @@ export class LicenseRegistryAdapter extends FixtureBackedAdapter {
   readonly integrationNote =
     'Licensing is per-jurisdiction and per-profession: each board runs its own lookup, many are HTML-only, some ' +
     'prohibit automated querying in their terms of use, and a few charge for API access. Implement board by board, ' +
-    'checking each one\'s terms first. Never build a generic scraper across boards.';
+    "checking each one's terms first. Never build a generic scraper across boards.";
 }
 
 export class PatentRegistryAdapter extends FixtureBackedAdapter {
@@ -124,6 +124,6 @@ export class WebArchiveAdapter extends FixtureBackedAdapter {
   readonly integrationNote =
     'The Internet Archive Wayback Machine has a public availability API suitable for checking whether an official ' +
     'page said something different at a past date — useful when a site has since been edited. Coverage is uneven and ' +
-    'a missing capture means nothing. Respect the archive\'s rate limits, and never use archives to reach content ' +
+    "a missing capture means nothing. Respect the archive's rate limits, and never use archives to reach content " +
     'that was behind authentication.';
 }

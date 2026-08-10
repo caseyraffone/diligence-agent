@@ -110,11 +110,7 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
           </div>
           <div className="stat">
             <div className="stat-value">
-              {report.auditIntegrity.valid ? (
-                <Pill tone="ok">intact</Pill>
-              ) : (
-                <Pill tone="conflict">broken</Pill>
-              )}
+              {report.auditIntegrity.valid ? <Pill tone="ok">intact</Pill> : <Pill tone="conflict">broken</Pill>}
             </div>
             <div className="stat-label">Audit chain ({report.auditIntegrity.eventsChecked} events)</div>
           </div>

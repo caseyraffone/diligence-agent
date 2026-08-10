@@ -104,7 +104,9 @@ function renderPdf(report: CaseReport): Promise<Buffer> {
       doc.text(`Status: ${claim.status.replace(/_/g, ' ').toLowerCase()} — ${claim.statusMeaning}`);
       doc.text(`Source: ${claim.citation} · Dates: ${claim.dates}`);
       if (claim.humanDecision) {
-        doc.text(`Recorded by ${claim.humanDecision.by} on ${claim.humanDecision.at}: ${claim.humanDecision.rationale}`);
+        doc.text(
+          `Recorded by ${claim.humanDecision.by} on ${claim.humanDecision.at}: ${claim.humanDecision.rationale}`,
+        );
       } else {
         doc.text('No human decision has been recorded for this claim.');
       }
@@ -125,9 +127,12 @@ function renderPdf(report: CaseReport): Promise<Buffer> {
         doc.font('Helvetica-Bold').text(line.claim);
         doc.font('Helvetica').text(line.summary);
         if (line.detail) doc.fillColor('#444').text(line.detail).fillColor('#000');
-        doc.fillColor('#666').fontSize(8).text(
-          `${line.authority}${line.source ? ` · ${line.source}` : ''}${line.retrievedAt ? ` · retrieved ${line.retrievedAt}` : ''}`,
-        );
+        doc
+          .fillColor('#666')
+          .fontSize(8)
+          .text(
+            `${line.authority}${line.source ? ` · ${line.source}` : ''}${line.retrievedAt ? ` · retrieved ${line.retrievedAt}` : ''}`,
+          );
         doc.fillColor('#000').fontSize(BODY).moveDown(0.4);
       }
     };
@@ -152,7 +157,11 @@ function renderPdf(report: CaseReport): Promise<Buffer> {
       'Things the software noticed, including searches that returned no record. An observation is not a finding, and a search returning nothing is not evidence about a claim.',
       report.systemObservations,
     );
-    section('Inferences', 'Reasoning drawn from the material above rather than stated by any source.', report.inferences);
+    section(
+      'Inferences',
+      'Reasoning drawn from the material above rather than stated by any source.',
+      report.inferences,
+    );
 
     doc.addPage();
     doc.font('Helvetica-Bold').fontSize(H2).text(`Unresolved differences (${report.unresolvedDiscrepancies.length})`);

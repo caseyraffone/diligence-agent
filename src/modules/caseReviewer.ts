@@ -89,7 +89,9 @@ export async function buildCaseWorkspace(caseId: string, organizationId: string)
   });
 
   const [openDiscrepancies, overdueClarifications, failedChecks, severities] = await Promise.all([
-    prisma.discrepancy.count({ where: { caseId, status: { in: [DiscrepancyStatus.OPEN, DiscrepancyStatus.UNDER_REVIEW] } } }),
+    prisma.discrepancy.count({
+      where: { caseId, status: { in: [DiscrepancyStatus.OPEN, DiscrepancyStatus.UNDER_REVIEW] } },
+    }),
     prisma.clarificationRequest.count({
       where: { caseId, status: 'SENT', dueDate: { lt: new Date() } },
     }),
@@ -159,9 +161,7 @@ export async function buildCaseWorkspace(caseId: string, organizationId: string)
       severities.at(0)?.severity ??
       null,
     overdueClarifications,
-    daysUntilDue: record.dueDate
-      ? Math.round((record.dueDate.getTime() - Date.now()) / 86_400_000)
-      : null,
+    daysUntilDue: record.dueDate ? Math.round((record.dueDate.getTime() - Date.now()) / 86_400_000) : null,
     failedSourceChecks: failedChecks,
   });
 
@@ -211,7 +211,14 @@ export async function buildTimeline(caseId: string, organizationId: string): Pro
       organizationId,
       startDate: { not: null },
       category: {
-        in: ['EDUCATION_ENROLLMENT', 'DEGREE_AWARD', 'EMPLOYMENT', 'RESEARCH_POSITION', 'VOLUNTEER_LEADERSHIP', 'ATHLETIC_PARTICIPATION'],
+        in: [
+          'EDUCATION_ENROLLMENT',
+          'DEGREE_AWARD',
+          'EMPLOYMENT',
+          'RESEARCH_POSITION',
+          'VOLUNTEER_LEADERSHIP',
+          'ATHLETIC_PARTICIPATION',
+        ],
       },
     },
     orderBy: { startDate: 'asc' },

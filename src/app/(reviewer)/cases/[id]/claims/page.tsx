@@ -213,7 +213,9 @@ export default async function ClaimsPage({
                     <tr key={e.id}>
                       <td>
                         <Pill
-                          tone={e.relation === 'SUPPORTING' ? 'ok' : e.relation === 'CONFLICTING' ? 'conflict' : 'neutral'}
+                          tone={
+                            e.relation === 'SUPPORTING' ? 'ok' : e.relation === 'CONFLICTING' ? 'conflict' : 'neutral'
+                          }
                         >
                           {e.relation.toLowerCase()}
                         </Pill>
@@ -358,12 +360,22 @@ export default async function ClaimsPage({
                     <input type="hidden" name="claimId" value={claim.id} />
                     <div className="field">
                       <label htmlFor={`text-${claim.id}`}>Normalised claim</label>
-                      <input id={`text-${claim.id}`} name="normalizedText" type="text" defaultValue={claim.normalizedText} />
+                      <input
+                        id={`text-${claim.id}`}
+                        name="normalizedText"
+                        type="text"
+                        defaultValue={claim.normalizedText}
+                      />
                     </div>
                     <div className="row">
                       <div>
                         <label htmlFor={`org-${claim.id}`}>Organisation</label>
-                        <input id={`org-${claim.id}`} name="organizationName" type="text" defaultValue={claim.organizationName ?? ''} />
+                        <input
+                          id={`org-${claim.id}`}
+                          name="organizationName"
+                          type="text"
+                          defaultValue={claim.organizationName ?? ''}
+                        />
                       </div>
                       <div>
                         <label htmlFor={`title-${claim.id}`}>Title</label>

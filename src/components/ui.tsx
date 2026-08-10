@@ -103,10 +103,9 @@ export function DecisionSupportNotice() {
   return (
     <div className="notice" role="note">
       <strong>Decision-support only</strong>
-      This system gathers and organises evidence for a trained human reviewer. It does not determine whether a
-      statement is true, does not allege dishonesty, and produces no admissions, hiring, or eligibility decision.
-      “Unable to verify” means no record was found through the channels available — it is not evidence that a claim
-      is inaccurate.
+      This system gathers and organises evidence for a trained human reviewer. It does not determine whether a statement
+      is true, does not allege dishonesty, and produces no admissions, hiring, or eligibility decision. “Unable to
+      verify” means no record was found through the channels available — it is not evidence that a claim is inaccurate.
     </div>
   );
 }

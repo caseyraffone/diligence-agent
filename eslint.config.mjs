@@ -61,4 +61,23 @@ export default [
     files: ['tests/**/*.ts', 'prisma/**/*.ts', 'scripts/**/*.ts'],
     rules: { 'no-console': 'off' },
   },
+  {
+    // Node scripts run outside the bundler and use Node globals directly.
+    files: ['**/*.mjs', '**/*.cjs'],
+    languageOptions: {
+      ecmaVersion: 2022,
+      sourceType: 'module',
+      globals: {
+        process: 'readonly',
+        console: 'readonly',
+        Buffer: 'readonly',
+        URL: 'readonly',
+        __dirname: 'readonly',
+        Atomics: 'readonly',
+        SharedArrayBuffer: 'readonly',
+        Int32Array: 'readonly',
+      },
+    },
+    rules: { 'no-console': 'off' },
+  },
 ];

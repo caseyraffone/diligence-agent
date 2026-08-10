@@ -14,10 +14,40 @@
  */
 
 const ORG_STOPWORDS = new Set([
-  'the', 'of', 'and', 'at', 'for', 'a', 'an',
-  'inc', 'incorporated', 'llc', 'ltd', 'limited', 'corp', 'corporation', 'co',
-  'plc', 'gmbh', 'sa', 'sas', 'bv', 'nv', 'ab', 'oy', 'as', 'spa', 'srl', 'pty',
-  'company', 'group', 'holdings', 'technologies', 'technology', 'labs', 'laboratory',
+  'the',
+  'of',
+  'and',
+  'at',
+  'for',
+  'a',
+  'an',
+  'inc',
+  'incorporated',
+  'llc',
+  'ltd',
+  'limited',
+  'corp',
+  'corporation',
+  'co',
+  'plc',
+  'gmbh',
+  'sa',
+  'sas',
+  'bv',
+  'nv',
+  'ab',
+  'oy',
+  'as',
+  'spa',
+  'srl',
+  'pty',
+  'company',
+  'group',
+  'holdings',
+  'technologies',
+  'technology',
+  'labs',
+  'laboratory',
 ]);
 
 const TITLE_SYNONYMS: Array<Set<string>> = [
@@ -94,12 +124,17 @@ export function organizationsMatch(a: string, b: string): boolean {
 function isAcronymOf(short: string, long: string): boolean {
   const compact = short.replace(/\s/g, '');
   if (compact.length < 2 || compact.length > 8) return false;
-  const initials = long.split(' ').map((w) => w[0] ?? '').join('');
+  const initials = long
+    .split(' ')
+    .map((w) => w[0] ?? '')
+    .join('');
   return initials === compact;
 }
 
 export function normalizeTitle(input: string): string {
-  return normalizeText(input).replace(/\b(sr|snr)\b/g, 'senior').replace(/\b(jr)\b/g, 'junior');
+  return normalizeText(input)
+    .replace(/\b(sr|snr)\b/g, 'senior')
+    .replace(/\b(jr)\b/g, 'junior');
 }
 
 export function titlesMatch(a: string, b: string): boolean {

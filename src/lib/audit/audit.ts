@@ -79,7 +79,10 @@ const MAX_ATTEMPTS = 5;
  * Appends one audit event. Safe to call inside an existing transaction by
  * passing `tx`; otherwise it manages its own and retries on sequence contention.
  */
-export async function recordAudit(input: AuditInput, tx?: TransactionClient): Promise<{ id: string; sequence: number }> {
+export async function recordAudit(
+  input: AuditInput,
+  tx?: TransactionClient,
+): Promise<{ id: string; sequence: number }> {
   if (tx) return appendWithin(tx, input);
 
   let lastError: unknown;

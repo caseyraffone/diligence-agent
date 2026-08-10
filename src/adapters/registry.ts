@@ -50,9 +50,7 @@ export function getAdapter(key: string): SourceAdapter | null {
  */
 export function adaptersForClaim(claim: AdapterClaimInput, approvedKeys: string[]): SourceAdapter[] {
   const approved = new Set(approvedKeys);
-  return ADAPTERS.filter((a) => approved.has(a.key) && a.supports(claim)).sort(
-    (a, b) => rank(a) - rank(b),
-  );
+  return ADAPTERS.filter((a) => approved.has(a.key) && a.supports(claim)).sort((a, b) => rank(a) - rank(b));
 }
 
 function rank(adapter: SourceAdapter): number {

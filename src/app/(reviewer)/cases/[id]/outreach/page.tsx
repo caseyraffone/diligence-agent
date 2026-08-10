@@ -2,7 +2,13 @@ import { revalidatePath } from 'next/cache';
 import { requireActor, requireServerAction } from '@/lib/auth/context';
 import { loadCase, loadClarification, loadOutreach } from '@/lib/auth/tenant';
 import { prisma } from '@/lib/prisma';
-import { approveOutreach, declineOutreach, draftOutreach, recordOutreachResponse, recordOutreachSent } from '@/modules/outreach';
+import {
+  approveOutreach,
+  declineOutreach,
+  draftOutreach,
+  recordOutreachResponse,
+  recordOutreachSent,
+} from '@/modules/outreach';
 import { approveAndSendClarification, closeClarification, editClarification } from '@/modules/clarification';
 import { EmptyState, Pill, formatDateTime } from '@/components/ui';
 
@@ -184,7 +190,10 @@ export default async function OutreachPage({
         {clarifications.length === 0 ? <EmptyState>None drafted for this case.</EmptyState> : null}
 
         {clarifications.map((c) => (
-          <article key={c.id} style={{ borderTop: '1px solid var(--border)', paddingTop: '0.85rem', marginTop: '0.85rem' }}>
+          <article
+            key={c.id}
+            style={{ borderTop: '1px solid var(--border)', paddingTop: '0.85rem', marginTop: '0.85rem' }}
+          >
             <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
               <strong style={{ flex: '1 1 260px' }}>{c.subject}</strong>
               <Pill tone={c.status === 'RESPONDED' ? 'ok' : c.status === 'SENT' ? 'info' : 'neutral'}>
@@ -262,7 +271,10 @@ export default async function OutreachPage({
         {outreach.length === 0 ? <EmptyState>No outreach drafted for this case.</EmptyState> : null}
 
         {outreach.map((o) => (
-          <article key={o.id} style={{ borderTop: '1px solid var(--border)', paddingTop: '0.85rem', marginTop: '0.85rem' }}>
+          <article
+            key={o.id}
+            style={{ borderTop: '1px solid var(--border)', paddingTop: '0.85rem', marginTop: '0.85rem' }}
+          >
             <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
               <strong style={{ flex: '1 1 260px' }}>{o.recipientOrgName}</strong>
               <Pill

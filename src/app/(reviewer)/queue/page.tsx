@@ -53,8 +53,8 @@ export default async function QueuePage({ searchParams }: { searchParams: Promis
       <div className="page-head">
         <h1>Verification queue</h1>
         <p>
-          Background verification work across your organisation’s cases. Tasks blocked on consent are parked, never
-          run — they resume automatically once consent is recorded on the case.
+          Background verification work across your organisation’s cases. Tasks blocked on consent are parked, never run
+          — they resume automatically once consent is recorded on the case.
         </p>
       </div>
 
@@ -91,8 +91,8 @@ export default async function QueuePage({ searchParams }: { searchParams: Promis
           <form action={runQueue}>
             <button type="submit">Process pending tasks now</button>
             <span className="hint">
-              In production this runs continuously in a separate worker process. Here it runs on demand so the
-              behaviour is observable.
+              In production this runs continuously in a separate worker process. Here it runs on demand so the behaviour
+              is observable.
             </span>
           </form>
         ) : null}

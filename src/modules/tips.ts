@@ -139,7 +139,11 @@ export async function triageTip(input: {
   userId: string;
   status: Extract<
     TipStatus,
-    'UNDER_REVIEW' | 'CORROBORATION_REQUIRED' | 'INDEPENDENTLY_CORROBORATED' | 'CLOSED_UNSUBSTANTIATED' | 'CLOSED_OUT_OF_SCOPE'
+    | 'UNDER_REVIEW'
+    | 'CORROBORATION_REQUIRED'
+    | 'INDEPENDENTLY_CORROBORATED'
+    | 'CLOSED_UNSUBSTANTIATED'
+    | 'CLOSED_OUT_OF_SCOPE'
   >;
   reviewNote: string;
   caseId?: string;
@@ -156,7 +160,10 @@ export async function triageTip(input: {
     // "Corroborated" must mean corroborated by something other than the tip.
     const evidenceCount = tip.caseId
       ? await prisma.evidenceItem.count({
-          where: { caseId: input.caseId ?? tip.caseId, statementType: { in: ['CONFIRMED_FACT', 'THIRD_PARTY_STATEMENT'] } },
+          where: {
+            caseId: input.caseId ?? tip.caseId,
+            statementType: { in: ['CONFIRMED_FACT', 'THIRD_PARTY_STATEMENT'] },
+          },
         })
       : 0;
     if (evidenceCount === 0) {

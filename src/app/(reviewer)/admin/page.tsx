@@ -91,8 +91,8 @@ export default async function AdminPage() {
                 <th scope="row">What the model may do</th>
                 <td className="small">
                   Extract, normalise, classify, summarise, generate interview questions, draft clarification text.
-                  <strong> It cannot set a verification status, reach a conclusion, or produce a decision</strong> —
-                  the output schemas contain no field for any of those.
+                  <strong> It cannot set a verification status, reach a conclusion, or produce a decision</strong> — the
+                  output schemas contain no field for any of those.
                 </td>
               </tr>
             </tbody>
@@ -182,8 +182,8 @@ export default async function AdminPage() {
       <section className="card">
         <h2>Access</h2>
         <p className="small muted">
-          {orgs} tenant organisation(s) exist in this deployment. You can only see your own — tenant scope is taken
-          from the session and folded into every query.
+          {orgs} tenant organisation(s) exist in this deployment. You can only see your own — tenant scope is taken from
+          the session and folded into every query.
         </p>
         <div className="table-wrap">
           <table>
@@ -213,8 +213,8 @@ export default async function AdminPage() {
           </table>
         </div>
         <p className="small muted">
-          No role in this system — including administrator — can produce an admissions, hiring, or eligibility
-          decision. That capability does not exist, so it cannot be granted.
+          No role in this system — including administrator — can produce an admissions, hiring, or eligibility decision.
+          That capability does not exist, so it cannot be granted.
         </p>
       </section>
 

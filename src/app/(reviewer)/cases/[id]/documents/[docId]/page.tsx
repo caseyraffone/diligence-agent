@@ -53,7 +53,8 @@ export default async function DocumentPage({ params }: { params: Promise<{ id: s
         <h2>{document.filename}</h2>
         <p className="small muted">
           {document.kind.replace(/_/g, ' ').toLowerCase()} · {document.pageCount} page(s) ·{' '}
-          {(document.sizeBytes / 1024).toFixed(1)} KiB · SHA-256 <span className="mono">{document.sha256.slice(0, 24)}…</span>
+          {(document.sizeBytes / 1024).toFixed(1)} KiB · SHA-256{' '}
+          <span className="mono">{document.sha256.slice(0, 24)}…</span>
         </p>
         <div className="inline-actions">
           <Pill tone={document.status === 'PARSED' ? 'ok' : 'warn'}>{document.status.toLowerCase()}</Pill>
@@ -82,8 +83,7 @@ export default async function DocumentPage({ params }: { params: Promise<{ id: s
               if (record['kind'] === 'FILE_METADATA') {
                 return (
                   <li key={i}>
-                    <strong>File metadata:</strong>{' '}
-                    <span className="mono">{JSON.stringify(record['values'])}</span>
+                    <strong>File metadata:</strong> <span className="mono">{JSON.stringify(record['values'])}</span>
                   </li>
                 );
               }

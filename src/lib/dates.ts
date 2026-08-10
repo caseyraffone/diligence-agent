@@ -26,10 +26,30 @@ export interface DateRange {
 }
 
 const MONTHS: Record<string, number> = {
-  jan: 0, january: 0, feb: 1, february: 1, mar: 2, march: 2, apr: 3, april: 3,
-  may: 4, jun: 5, june: 5, jul: 6, july: 6, aug: 7, august: 7,
-  sep: 8, sept: 8, september: 8, oct: 9, october: 9, nov: 10, november: 10,
-  dec: 11, december: 11,
+  jan: 0,
+  january: 0,
+  feb: 1,
+  february: 1,
+  mar: 2,
+  march: 2,
+  apr: 3,
+  april: 3,
+  may: 4,
+  jun: 5,
+  june: 5,
+  jul: 6,
+  july: 6,
+  aug: 7,
+  august: 7,
+  sep: 8,
+  sept: 8,
+  september: 8,
+  oct: 9,
+  october: 9,
+  nov: 10,
+  november: 10,
+  dec: 11,
+  december: 11,
 };
 
 // Seasons map to their conventional northern-hemisphere academic spans. They
@@ -115,7 +135,11 @@ export function parseDateToken(raw: string): ParsedDate | null {
     }
     if (key in SEASONS) {
       const season = SEASONS[key]!;
-      return { date: utc(y, season.startMonth), precision: 'RANGE_APPROXIMATE', upperBound: endOfMonth(y, season.endMonth) };
+      return {
+        date: utc(y, season.startMonth),
+        precision: 'RANGE_APPROXIMATE',
+        upperBound: endOfMonth(y, season.endMonth),
+      };
     }
   }
   const dayFirst = /^(\d{1,2}) ([A-Za-z]+)\.? (\d{4})$/.exec(s);
@@ -137,7 +161,10 @@ export function parseDateRange(raw: string): DateRange {
   const s = raw.trim().replace(/[–—]/g, '-');
   const sep = /\s+(?:to|until|through)\s+|\s*-\s*(?![0-9]{1,2}\b(?:-\d))|\s*-\s*/i;
 
-  const parts = s.split(sep).map((p) => p.trim()).filter(Boolean);
+  const parts = s
+    .split(sep)
+    .map((p) => p.trim())
+    .filter(Boolean);
 
   if (parts.length >= 2) {
     const startTok = parts[0]!;
@@ -224,11 +251,7 @@ export function durationDays(range: DateRange, asOf: Date = new Date()): number 
   return Math.max(0, Math.round((end.getTime() - range.start.getTime()) / DAY_MS));
 }
 
-export function toRange(
-  start: Date | null | undefined,
-  end: Date | null | undefined,
-  precision: Precision,
-): DateRange {
+export function toRange(start: Date | null | undefined, end: Date | null | undefined, precision: Precision): DateRange {
   return {
     start: start ?? null,
     end: end ?? null,

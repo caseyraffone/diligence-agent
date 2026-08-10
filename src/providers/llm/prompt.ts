@@ -59,11 +59,7 @@ export function renderUntrustedBlocks(blocks: UntrustedBlock[], fence: string): 
       // Neutralize any literal occurrence of the fence inside the content so the
       // block cannot be terminated early from within.
       const safe = block.content.split(fence).join('[FENCE]');
-      return [
-        `<<<${fence} label="${block.label.replace(/"/g, "'")}">>>`,
-        safe,
-        `<<<END_${fence}>>>`,
-      ].join('\n');
+      return [`<<<${fence} label="${block.label.replace(/"/g, "'")}">>>`, safe, `<<<END_${fence}>>>`].join('\n');
     })
     .join('\n\n');
 }
@@ -104,11 +100,23 @@ export interface InjectionObservation {
 }
 
 const INJECTION_PATTERNS: Array<{ name: string; re: RegExp }> = [
-  { name: 'instruction-override', re: /\b(ignore|disregard|forget|override)\b[^.\n]{0,40}\b(previous|prior|above|all|your)\b[^.\n]{0,30}\b(instruction|rule|prompt|direction)/gi },
+  {
+    name: 'instruction-override',
+    re: /\b(ignore|disregard|forget|override)\b[^.\n]{0,40}\b(previous|prior|above|all|your)\b[^.\n]{0,30}\b(instruction|rule|prompt|direction)/gi,
+  },
   { name: 'role-reassignment', re: /\byou are (now )?(an?|the) [a-z ]{3,40}(assistant|agent|system|model|ai)\b/gi },
-  { name: 'status-directive', re: /\b(mark|set|treat|consider|record|classify)\b[^.\n]{0,40}\b(as )?(verified|approved|authentic|confirmed|genuine|legitimate)\b/gi },
-  { name: 'system-prompt-probe', re: /\b(system prompt|reveal|print|output|disclose)\b[^.\n]{0,30}\b(instruction|prompt|configuration|api[_ ]?key|secret|token)\b/gi },
-  { name: 'addressed-to-model', re: /\b(as an ai|language model|chatgpt|claude|gpt-?[0-9]|llm)\b[^.\n]{0,40}\b(you (must|should|will)|do not|please)\b/gi },
+  {
+    name: 'status-directive',
+    re: /\b(mark|set|treat|consider|record|classify)\b[^.\n]{0,40}\b(as )?(verified|approved|authentic|confirmed|genuine|legitimate)\b/gi,
+  },
+  {
+    name: 'system-prompt-probe',
+    re: /\b(system prompt|reveal|print|output|disclose)\b[^.\n]{0,30}\b(instruction|prompt|configuration|api[_ ]?key|secret|token)\b/gi,
+  },
+  {
+    name: 'addressed-to-model',
+    re: /\b(as an ai|language model|chatgpt|claude|gpt-?[0-9]|llm)\b[^.\n]{0,40}\b(you (must|should|will)|do not|please)\b/gi,
+  },
   { name: 'fence-forgery', re: /<<<\s*(END_)?UNTRUSTED|\bSYSTEM\s*:|\bASSISTANT\s*:/gi },
 ];
 
@@ -125,7 +133,10 @@ export function scanForInjectionAttempts(text: string): InjectionObservation[] {
       const start = Math.max(0, m.index - 40);
       found.push({
         pattern: name,
-        excerpt: text.slice(start, Math.min(text.length, m.index + m[0].length + 40)).replace(/\s+/g, ' ').trim(),
+        excerpt: text
+          .slice(start, Math.min(text.length, m.index + m[0].length + 40))
+          .replace(/\s+/g, ' ')
+          .trim(),
         index: m.index,
       });
       if (found.length >= 25) return found;

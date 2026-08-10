@@ -88,8 +88,7 @@ export function proposeStatus(evidence: EvidenceSummaryInput[]): StatusProposal 
   // Only third-party and confirmed material counts toward corroboration.
   // An applicant restating their own claim is not corroboration of it.
   const independentSupport = supporting.filter(
-    (e) =>
-      e.statementType === StatementType.CONFIRMED_FACT || e.statementType === StatementType.THIRD_PARTY_STATEMENT,
+    (e) => e.statementType === StatementType.CONFIRMED_FACT || e.statementType === StatementType.THIRD_PARTY_STATEMENT,
   );
 
   if (conflicting.length > 0) {

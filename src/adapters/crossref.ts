@@ -145,7 +145,7 @@ export class CrossrefAdapter extends FixtureBackedAdapter {
         url: `https://doi.org/${doi}`,
         excerpt,
         detail:
-          'The DOI resolves to a registered work, confirming the publication exists. The applicant\'s name was not ' +
+          "The DOI resolves to a registered work, confirming the publication exists. The applicant's name was not " +
           'matched in the author list as recorded by Crossref. Author metadata is often incomplete, and names change; ' +
           'this is a question to put to the applicant, not a finding.',
         retrievedAt: new Date(),
@@ -161,7 +161,7 @@ export class CrossrefAdapter extends FixtureBackedAdapter {
       excerpt,
       detail:
         `The DOI resolves to a registered work and lists the applicant as author ${position + 1} of ${authors.length}. ` +
-        'Authorship order conventions differ by field; this confirms the publication and the applicant\'s presence on it, ' +
+        "Authorship order conventions differ by field; this confirms the publication and the applicant's presence on it, " +
         'not the size of their contribution.',
       retrievedAt: new Date(),
       isLive: true,

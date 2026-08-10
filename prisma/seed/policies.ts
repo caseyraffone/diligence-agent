@@ -231,7 +231,13 @@ export const POLICY_TEMPLATES: PolicyTemplateSeed[] = [
       ClaimCategory.DEGREE_AWARD,
       ClaimCategory.AWARD_COMPETITION,
     ],
-    approvedSourceKeys: ['employer-confirmation', 'patent-registry', 'university-registrar', 'web-archive', 'award-database'],
+    approvedSourceKeys: [
+      'employer-confirmation',
+      'patent-registry',
+      'university-registrar',
+      'web-archive',
+      'award-database',
+    ],
     evidenceRequirements: {
       minAuthorityForVerified: 'L3_AUTHORIZED_REPRESENTATIVE',
       minAuthorityForCorroborated: 'L5_INDEPENDENT_REPORTING',
@@ -245,7 +251,8 @@ export const POLICY_TEMPLATES: PolicyTemplateSeed[] = [
       escalateWhenDocumentAnomalyObserved: true,
     },
     reportLanguage: {
-      header: 'Diligence verification summary. Prepared for an authorised reviewer. Not a contracting or ' +
+      header:
+        'Diligence verification summary. Prepared for an authorised reviewer. Not a contracting or ' +
         'investment recommendation.',
       footer: COMMON_FOOTER,
     },

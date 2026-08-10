@@ -12,9 +12,7 @@ export class TextDocumentProcessor implements DocumentProcessor {
 
   supports(mimeType: string, filename: string): boolean {
     return (
-      mimeType.startsWith('text/') ||
-      mimeType === 'application/json' ||
-      /\.(txt|md|markdown|csv)$/i.test(filename)
+      mimeType.startsWith('text/') || mimeType === 'application/json' || /\.(txt|md|markdown|csv)$/i.test(filename)
     );
   }
 

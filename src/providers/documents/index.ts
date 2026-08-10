@@ -36,11 +36,7 @@ export function resetDocumentProcessorCache(): void {
   chain = null;
 }
 
-export async function processDocument(
-  bytes: Buffer,
-  mimeType: string,
-  filename: string,
-): Promise<ProcessedDocument> {
+export async function processDocument(bytes: Buffer, mimeType: string, filename: string): Promise<ProcessedDocument> {
   const processor = getDocumentProcessors().find((p) => p.supports(mimeType, filename));
   if (!processor) throw new UnsupportedDocumentError(mimeType);
   return processor.process(bytes, filename);

@@ -4,7 +4,11 @@ import { recordAudit } from '@/lib/audit/audit';
 import { redact } from '@/lib/redaction';
 import { parseDateToken } from '@/lib/dates';
 import { runStructured } from '@/providers/llm/client';
-import { ClaimExtractionResponseSchema, CLAIM_EXTRACTION_HINT, type ExtractedClaimPayload } from '@/providers/llm/schemas';
+import {
+  ClaimExtractionResponseSchema,
+  CLAIM_EXTRACTION_HINT,
+  type ExtractedClaimPayload,
+} from '@/providers/llm/schemas';
 import { scanForInjectionAttempts } from '@/providers/llm/prompt';
 
 /**

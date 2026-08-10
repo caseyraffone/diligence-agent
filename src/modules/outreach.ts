@@ -56,7 +56,9 @@ export async function draftOutreach(input: DraftOutreachInput): Promise<string> 
     '',
     `Individual named in the application: ${record.applicant.displayName}`,
     claim ? `Item to confirm: ${claim.normalizedText}` : 'Item to confirm: (specify)',
-    claim?.startDate ? `Period stated: ${formatDate(claim.startDate)} to ${claim.endDate ? formatDate(claim.endDate) : 'present'}` : '',
+    claim?.startDate
+      ? `Period stated: ${formatDate(claim.startDate)} to ${claim.endDate ? formatDate(claim.endDate) : 'present'}`
+      : '',
     '',
     'We are asking only whether your records are consistent with the statement above, and if not, what your records',
     'show. We are not asking for any assessment of the individual, nor for any information beyond this item.',
@@ -65,7 +67,7 @@ export async function draftOutreach(input: DraftOutreachInput): Promise<string> 
     'than any further detail.',
     '',
     `Our reference: ${record.reference}`,
-    'A copy of the individual\'s authorisation is available on request.',
+    "A copy of the individual's authorisation is available on request.",
     '',
     'Thank you for your time.',
   ]
@@ -116,7 +118,10 @@ export async function approveOutreach(input: {
     where: { id: input.outreachId, organizationId: input.organizationId },
   });
 
-  if (request.status === OutreachStatus.APPROVED_FOR_SENDING || request.status === OutreachStatus.SENT_RECORDED_MANUALLY) {
+  if (
+    request.status === OutreachStatus.APPROVED_FOR_SENDING ||
+    request.status === OutreachStatus.SENT_RECORDED_MANUALLY
+  ) {
     throw new ConflictError('This outreach request has already been approved.');
   }
 

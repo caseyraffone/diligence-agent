@@ -25,7 +25,10 @@ export interface IssuedPortalToken {
   url: string;
 }
 
-export function issuePortalToken(baseUrl: string, ttlDays: number = DEFAULT_TTL_DAYS): IssuedPortalToken & { tokenHash: string } {
+export function issuePortalToken(
+  baseUrl: string,
+  ttlDays: number = DEFAULT_TTL_DAYS,
+): IssuedPortalToken & { tokenHash: string } {
   const token = randomToken(32);
   const expiresAt = new Date(Date.now() + ttlDays * 24 * 60 * 60 * 1000);
   return {

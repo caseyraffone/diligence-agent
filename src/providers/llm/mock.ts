@@ -197,7 +197,10 @@ function entryClaim(line: string, category: ExtractedClaimPayload['category']): 
   const dates = (m.groups['dates'] ?? '').trim();
 
   // "Organization, Location" — treat a trailing short capitalized token as location.
-  const restParts = restRaw.split(',').map((p) => p.trim()).filter(Boolean);
+  const restParts = restRaw
+    .split(',')
+    .map((p) => p.trim())
+    .filter(Boolean);
   let organization = restParts[0] ?? restRaw;
   let location: string | null = null;
   if (restParts.length > 1) {
@@ -285,7 +288,10 @@ function splitDates(dates: string): {
 } {
   if (!dates) return { startDate: null, endDate: null, precision: 'UNKNOWN' };
 
-  const parts = dates.split(/\s*(?:–|—|-|to)\s*/i).map((p) => p.trim()).filter(Boolean);
+  const parts = dates
+    .split(/\s*(?:–|—|-|to)\s*/i)
+    .map((p) => p.trim())
+    .filter(Boolean);
   const start = parts[0] ? toIsoish(parts[0]) : null;
   const endToken = parts.length > 1 ? parts[parts.length - 1]! : null;
   const isPresent = endToken ? /^(present|current|now|ongoing)$/i.test(endToken) : false;
@@ -298,8 +304,18 @@ function splitDates(dates: string): {
 }
 
 const MONTHS: Record<string, string> = {
-  jan: '01', feb: '02', mar: '03', apr: '04', may: '05', jun: '06',
-  jul: '07', aug: '08', sep: '09', oct: '10', nov: '11', dec: '12',
+  jan: '01',
+  feb: '02',
+  mar: '03',
+  apr: '04',
+  may: '05',
+  jun: '06',
+  jul: '07',
+  aug: '08',
+  sep: '09',
+  oct: '10',
+  nov: '11',
+  dec: '12',
 };
 
 function toIsoish(token: string): string | null {
@@ -427,7 +443,12 @@ function draftClarification(blocks: UntrustedBlock[], instruction: string) {
 }
 
 function summarizeEvidence(blocks: UntrustedBlock[]) {
-  const lines = blocks.flatMap((b) => b.content.split('\n').map((l) => l.trim()).filter(Boolean));
+  const lines = blocks.flatMap((b) =>
+    b.content
+      .split('\n')
+      .map((l) => l.trim())
+      .filter(Boolean),
+  );
   const supporting = lines.filter((l) => /^SUPPORTING/i.test(l)).length;
   const conflicting = lines.filter((l) => /^CONFLICTING/i.test(l)).length;
   const neutral = lines.filter((l) => /^NEUTRAL/i.test(l)).length;
@@ -447,7 +468,8 @@ function summarizeEvidence(blocks: UntrustedBlock[]) {
   }
 
   const openQuestions: string[] = [];
-  if (conflicting > 0) openQuestions.push('Which record is authoritative for this fact, and has the issuer been asked directly?');
+  if (conflicting > 0)
+    openQuestions.push('Which record is authoritative for this fact, and has the issuer been asked directly?');
   if (supporting === 0) openQuestions.push('Is there an issuing organisation that could confirm this directly?');
 
   return { summary: parts.join(' '), openQuestions };

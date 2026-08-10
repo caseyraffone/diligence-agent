@@ -161,7 +161,10 @@ export interface NextActionSuggestion {
 
 export function suggestNextAction(input: NextActionInput): NextActionSuggestion {
   if (input.hasOpenClarification) {
-    return { action: 'NO_ACTION_NEEDED', reason: 'Awaiting the applicant’s response to an open clarification request.' };
+    return {
+      action: 'NO_ACTION_NEEDED',
+      reason: 'Awaiting the applicant’s response to an open clarification request.',
+    };
   }
 
   if (input.status === ClaimStatus.VERIFIED || input.status === ClaimStatus.CORROBORATED) {
@@ -199,5 +202,8 @@ export function suggestNextAction(input: NextActionInput): NextActionSuggestion 
     };
   }
 
-  return { action: 'RECORD_REVIEWER_DECISION', reason: 'Evidence has been gathered and is ready for a reviewer to weigh.' };
+  return {
+    action: 'RECORD_REVIEWER_DECISION',
+    reason: 'Evidence has been gathered and is ready for a reviewer to weigh.',
+  };
 }

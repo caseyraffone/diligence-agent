@@ -109,21 +109,11 @@ const AUDITOR_PERMISSIONS: Permission[] = [
   'audit:read',
 ];
 
-export const ROLE_DEFINITIONS: Record<
-  RoleKey,
-  { name: string; description: string; permissions: Permission[] }
-> = {
+export const ROLE_DEFINITIONS: Record<RoleKey, { name: string; description: string; permissions: Permission[] }> = {
   ADMIN: {
     name: 'Administrator',
-    description:
-      'Manages users, policy templates, retention rules, and settings. Holds reviewer permissions as well.',
-    permissions: [
-      ...LEAD_REVIEWER_PERMISSIONS,
-      'admin:users',
-      'admin:policies',
-      'admin:retention',
-      'admin:settings',
-    ],
+    description: 'Manages users, policy templates, retention rules, and settings. Holds reviewer permissions as well.',
+    permissions: [...LEAD_REVIEWER_PERMISSIONS, 'admin:users', 'admin:policies', 'admin:retention', 'admin:settings'],
   },
   LEAD_REVIEWER: {
     name: 'Lead reviewer',

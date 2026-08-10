@@ -58,11 +58,7 @@ export interface LlmProvider {
 
 /** Named tasks the model is permitted to perform. This list is closed. */
 export type LlmTask =
-  | 'EXTRACT_CLAIMS'
-  | 'NORMALIZE_CLAIM'
-  | 'SUMMARIZE_EVIDENCE'
-  | 'GENERATE_INTERVIEW_QUESTIONS'
-  | 'DRAFT_CLARIFICATION';
+  'EXTRACT_CLAIMS' | 'NORMALIZE_CLAIM' | 'SUMMARIZE_EVIDENCE' | 'GENERATE_INTERVIEW_QUESTIONS' | 'DRAFT_CLARIFICATION';
 
 /** A block of content that came from outside the trust boundary. */
 export interface UntrustedBlock {

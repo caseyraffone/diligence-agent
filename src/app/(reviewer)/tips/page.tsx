@@ -48,11 +48,11 @@ export default async function TipsPage() {
       </div>
 
       <div className="notice notice-warn">
-        <strong>Every submission here is an unverified allegation</strong>
-        A submission cannot change any claim’s status, and there is no mechanism in this system for it to do so. To
-        matter, an allegation must lead you to independent evidence — and it is that evidence, not the allegation,
-        that supports any finding. Repeat submissions of the same text are suppressed so volume cannot masquerade as
-        corroboration. Submissions are never shown to the applicant, and the identity of a submitter is not collected.
+        <strong>Every submission here is an unverified allegation</strong>A submission cannot change any claim’s status,
+        and there is no mechanism in this system for it to do so. To matter, an allegation must lead you to independent
+        evidence — and it is that evidence, not the allegation, that supports any finding. Repeat submissions of the
+        same text are suppressed so volume cannot masquerade as corroboration. Submissions are never shown to the
+        applicant, and the identity of a submitter is not collected.
       </div>
 
       {tips.length === 0 ? <EmptyState>No submissions received.</EmptyState> : null}
@@ -108,7 +108,9 @@ export default async function TipsPage() {
                   <select id={`s-${tip.id}`} name="status" required>
                     <option value={TipStatus.UNDER_REVIEW}>Under review</option>
                     <option value={TipStatus.CORROBORATION_REQUIRED}>Needs independent corroboration</option>
-                    <option value={TipStatus.INDEPENDENTLY_CORROBORATED}>Independently corroborated by other evidence</option>
+                    <option value={TipStatus.INDEPENDENTLY_CORROBORATED}>
+                      Independently corroborated by other evidence
+                    </option>
                     <option value={TipStatus.CLOSED_UNSUBSTANTIATED}>Closed — no supporting evidence found</option>
                     <option value={TipStatus.CLOSED_OUT_OF_SCOPE}>Closed — out of scope</option>
                   </select>

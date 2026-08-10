@@ -96,8 +96,8 @@ export default async function DiscrepanciesPage({ params }: { params: Promise<{ 
           </p>
 
           <p className="small muted">
-            Rule <span className="mono">{d.ruleKey}</span> · {d.claimIds.length} claim(s) ·{' '}
-            {d.documentIds.length} document(s)
+            Rule <span className="mono">{d.ruleKey}</span> · {d.claimIds.length} claim(s) · {d.documentIds.length}{' '}
+            document(s)
           </p>
 
           {d.claimIds.length > 0 ? (
@@ -128,9 +128,13 @@ export default async function DiscrepanciesPage({ params }: { params: Promise<{ 
                   <div className="field">
                     <label htmlFor={`s-${d.id}`}>Outcome</label>
                     <select id={`s-${d.id}`} name="status" required>
-                      <option value={DiscrepancyStatus.EXPLAINED}>Explained — an ordinary explanation accounts for it</option>
+                      <option value={DiscrepancyStatus.EXPLAINED}>
+                        Explained — an ordinary explanation accounts for it
+                      </option>
                       <option value={DiscrepancyStatus.RESOLVED}>Resolved — settled by evidence</option>
-                      <option value={DiscrepancyStatus.DISMISSED_NOT_AN_ISSUE}>Not an issue — should not have been raised</option>
+                      <option value={DiscrepancyStatus.DISMISSED_NOT_AN_ISSUE}>
+                        Not an issue — should not have been raised
+                      </option>
                       <option value={DiscrepancyStatus.UNDER_REVIEW}>Under review — still working on it</option>
                     </select>
                   </div>

@@ -61,12 +61,14 @@ const RULES: Rule[] = [
   { kind: 'PAYMENT_CARD', pattern: /\b(?:\d[ -]?){12,18}\d\b/g, group: 0 },
   {
     kind: 'BANK_ACCOUNT_LABELLED',
-    pattern: /\b(?:Account(?:\s*(?:No|Number|#))?|IBAN|Routing(?:\s*(?:No|Number|#))?)\s*[:#]?\s*([A-Z0-9][A-Z0-9 -]{6,32})\b/gi,
+    pattern:
+      /\b(?:Account(?:\s*(?:No|Number|#))?|IBAN|Routing(?:\s*(?:No|Number|#))?)\s*[:#]?\s*([A-Z0-9][A-Z0-9 -]{6,32})\b/gi,
     group: 1,
   },
   {
     kind: 'DATE_OF_BIRTH_LABELLED',
-    pattern: /\b(?:DOB|Date of Birth|Birth ?date)\s*[:#]?\s*([0-9]{1,4}[/\-. ][0-9]{1,2}[/\-. ][0-9]{2,4}|[A-Z][a-z]+ \d{1,2},? \d{4})/gi,
+    pattern:
+      /\b(?:DOB|Date of Birth|Birth ?date)\s*[:#]?\s*([0-9]{1,4}[/\-. ][0-9]{1,2}[/\-. ][0-9]{2,4}|[A-Z][a-z]+ \d{1,2},? \d{4})/gi,
     group: 1,
   },
 ];
@@ -157,6 +159,7 @@ export function redact(input: string): RedactionResult {
 /** True when the text still contains something that looks like a government id. */
 export function containsGovernmentIdentifier(text: string): boolean {
   return redact(text).hits.some(
-    (h) => h.kind === 'US_SSN' || h.kind === 'US_ITIN' || h.kind === 'NATIONAL_ID_LABELLED' || h.kind === 'PASSPORT_LIKE',
+    (h) =>
+      h.kind === 'US_SSN' || h.kind === 'US_ITIN' || h.kind === 'NATIONAL_ID_LABELLED' || h.kind === 'PASSPORT_LIKE',
   );
 }

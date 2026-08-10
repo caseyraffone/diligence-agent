@@ -17,21 +17,6 @@ inference about a person, no treating absence of evidence as evidence.
 
 ## Now
 
-### 1. Interview workspace UI — closes a spec gap
-
-`src/modules/interviews.ts` generates questions and records scorecards, and the
-seed creates an interview, but there is **no reviewer screen**. The feature is
-unreachable in the product.
-
-- Route `cases/[id]/interviews`: list, generate for a claim, conduct, score.
-- Scorecard: per question, one of `CORROBORATES` / `PARTIALLY_CORROBORATES` /
-  `DOES_NOT_ADDRESS` / `NOT_ASKED`, plus notes.
-- Must show the "what a corroborating answer shows" text — the point is to help
-  a reviewer judge substance, not to score the person.
-- Conclusion is required before `humanReviewed` can be set. No aggregate score:
-  a number invites treating a conversation as a verdict.
-- Surface interviews in the report.
-
 ### 2. Reviewer notes UI — closes a spec gap
 
 `ReviewerNote` is modelled and required by the spec but never surfaced. Add
@@ -104,7 +89,24 @@ name matching alone risks attaching the wrong person's record.
 
 ## Done
 
-_(nothing yet)_
+### 1. Interview workspace UI — done
+
+Route `cases/[id]/interviews` with a tab in the case nav: prepare a conversation
+for a contribution claim, see all ten question areas alongside what a
+corroborating answer would demonstrate, rate each answer, and record a written
+conclusion. Interviews now also appear in the case report.
+
+While building it, the screen exposed a real quality problem the module had been
+hiding: questions interpolated the stored claim text verbatim, producing
+`What problem was Publication: "…" (DOI 10.1109/…) trying to solve?`. A reviewer
+reads these aloud, so `conversationSubject()` now strips the category prefix and
+identifier parenthetical, and a test pins that.
+
+**Verified:** 10 new integration tests — question set covers all ten areas, a
+conclusion under 20 characters is refused, the record carries no aggregate score
+field, the audit event names the reviewer, and an interview alone never moves a
+claim status. Plus a browser test asserting the rating options contain no
+credibility/honesty language. Full suite 245 unit+integration, 31 browser.
 
 ## Rejected
 

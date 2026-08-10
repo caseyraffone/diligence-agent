@@ -428,6 +428,23 @@ export interface CaseReport {
   }>;
   timeline: Array<{ label: string; organization: string | null; dates: string; status: string }>;
   clarifications: Array<{ subject: string; status: string; sentAt: string | null; responses: number }>;
+  /**
+   * Structured conversations about claimed personal contributions. Reported as
+   * counts and the reviewer's written conclusion — never as an aggregate score,
+   * because a number invites reading a conversation as a result.
+   */
+  interviews: Array<{
+    topic: string;
+    claim: string | null;
+    conductedBy: string | null;
+    conductedAt: string | null;
+    humanReviewed: boolean;
+    conclusion: string | null;
+    corroborates: number;
+    partiallyCorroborates: number;
+    doesNotAddress: number;
+    notAsked: number;
+  }>;
   auditIntegrity: { valid: boolean; eventsChecked: number; reason: string | null };
 }
 
@@ -451,32 +468,41 @@ export const REPORT_NOTICE =
   'if new information arrives.';
 
 export async function buildCaseReport(caseId: string, organizationId: string): Promise<CaseReport> {
-  const [workspace, timeline, record, evidence, discrepancies, decisions, clarifications, chain] = await Promise.all([
-    buildCaseWorkspace(caseId, organizationId),
-    buildTimeline(caseId, organizationId),
-    prisma.case.findFirstOrThrow({
-      where: { id: caseId, organizationId },
-      include: { applicant: true, policyTemplate: true, assignedReviewer: { select: { name: true } } },
-    }),
-    prisma.evidenceItem.findMany({
-      where: { caseId, organizationId },
-      include: { claim: { select: { normalizedText: true } }, sourceCheck: true },
-      orderBy: { createdAt: 'asc' },
-    }),
-    prisma.discrepancy.findMany({
-      where: { caseId, organizationId, status: { in: [DiscrepancyStatus.OPEN, DiscrepancyStatus.UNDER_REVIEW] } },
-    }),
-    prisma.reviewerDecision.findMany({
-      where: { caseId, organizationId },
-      include: { decidedBy: { select: { name: true } } },
-      orderBy: { decidedAt: 'desc' },
-    }),
-    prisma.clarificationRequest.findMany({
-      where: { caseId, organizationId },
-      include: { _count: { select: { responses: true } } },
-    }),
-    verifyAuditChain(organizationId),
-  ]);
+  const [workspace, timeline, record, evidence, discrepancies, decisions, clarifications, interviews, chain] =
+    await Promise.all([
+      buildCaseWorkspace(caseId, organizationId),
+      buildTimeline(caseId, organizationId),
+      prisma.case.findFirstOrThrow({
+        where: { id: caseId, organizationId },
+        include: { applicant: true, policyTemplate: true, assignedReviewer: { select: { name: true } } },
+      }),
+      prisma.evidenceItem.findMany({
+        where: { caseId, organizationId },
+        include: { claim: { select: { normalizedText: true } }, sourceCheck: true },
+        orderBy: { createdAt: 'asc' },
+      }),
+      prisma.discrepancy.findMany({
+        where: { caseId, organizationId, status: { in: [DiscrepancyStatus.OPEN, DiscrepancyStatus.UNDER_REVIEW] } },
+      }),
+      prisma.reviewerDecision.findMany({
+        where: { caseId, organizationId },
+        include: { decidedBy: { select: { name: true } } },
+        orderBy: { decidedAt: 'desc' },
+      }),
+      prisma.clarificationRequest.findMany({
+        where: { caseId, organizationId },
+        include: { _count: { select: { responses: true } } },
+      }),
+      prisma.interview.findMany({
+        where: { caseId, organizationId },
+        include: {
+          claim: { select: { normalizedText: true } },
+          conductedBy: { select: { name: true } },
+        },
+        orderBy: { createdAt: 'asc' },
+      }),
+      verifyAuditChain(organizationId),
+    ]);
 
   const line = (e: (typeof evidence)[number]): ReportEvidenceLine => ({
     claim: e.claim.normalizedText,
@@ -555,6 +581,22 @@ export async function buildCaseReport(caseId: string, organizationId: string): P
       sentAt: c.sentRecordedAt?.toISOString() ?? null,
       responses: c._count.responses,
     })),
+    interviews: interviews.map((i) => {
+      const scores = Array.isArray(i.scorecard) ? (i.scorecard as unknown as Array<{ rating?: string }>) : [];
+      const count = (rating: string): number => scores.filter((s) => s.rating === rating).length;
+      return {
+        topic: i.topic,
+        claim: i.claim?.normalizedText ?? null,
+        conductedBy: i.conductedBy?.name ?? null,
+        conductedAt: i.conductedAt?.toISOString() ?? null,
+        humanReviewed: i.humanReviewed,
+        conclusion: i.conclusion,
+        corroborates: count('CORROBORATES'),
+        partiallyCorroborates: count('PARTIALLY_CORROBORATES'),
+        doesNotAddress: count('DOES_NOT_ADDRESS'),
+        notAsked: count('NOT_ASKED'),
+      };
+    }),
     auditIntegrity: { valid: chain.valid, eventsChecked: chain.checked, reason: chain.reason },
   };
 }

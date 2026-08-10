@@ -12,6 +12,7 @@ const TABS = [
   { href: '/discrepancies', label: 'Observations' },
   { href: '/timeline', label: 'Timeline & links' },
   { href: '/outreach', label: 'Outreach & clarifications' },
+  { href: '/interviews', label: 'Interviews' },
   { href: '/report', label: 'Report' },
   { href: '/audit', label: 'Audit history' },
 ];

@@ -400,8 +400,30 @@ const AREA_TEMPLATES: Record<(typeof INTERVIEW_AREAS)[number], { q: (t: string) 
   },
 };
 
+/**
+ * Turns a stored claim into a phrase that reads naturally inside a question.
+ *
+ * The normalized claim text is written for a claims table ("Publication: "Some
+ * Title." (DOI 10.x/y)"), and interpolating it verbatim produces questions like
+ * "What problem was Publication: "Some Title." (DOI 10.x/y) trying to solve?".
+ * A reviewer reads these aloud, so the phrasing matters.
+ */
+function conversationSubject(raw: string): string {
+  let subject = raw.trim();
+
+  // Drop a leading category label and any identifier parenthetical.
+  subject = subject.replace(/^(Publication|Quantitative claim|Research position|Award)\s*:\s*/i, '');
+  subject = subject.replace(/\s*\((?:DOI|doi)[^)]*\)\s*$/i, '');
+  subject = subject.replace(/\s*\(\s*\d{4}(?:\s*[–-]\s*(?:\d{4}|present))?\s*\)\s*$/i, '');
+  subject = subject.replace(/^["“”']+|["“”']+$/g, '').trim();
+
+  // "Title at Organisation" reads better as "your work on Title at Organisation".
+  return truncate(subject || 'this work', 110);
+}
+
 function generateInterviewQuestions(blocks: UntrustedBlock[], instruction: string) {
-  const subject = truncate(blocks[0]?.content.split('\n')[0]?.trim() || instruction || 'this work', 120);
+  const firstLine = blocks[0]?.content.split('\n')[0]?.trim() || instruction || 'this work';
+  const subject = conversationSubject(firstLine);
   return {
     topic: subject,
     questions: INTERVIEW_AREAS.map((area) => ({

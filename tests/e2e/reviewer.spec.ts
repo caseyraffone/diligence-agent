@@ -110,6 +110,31 @@ test.describe('lead reviewer', () => {
     await expect(page.getByText(/case viewed/i).first()).toBeVisible();
   });
 
+  test('the interview workspace shows questions and refuses to score the person', async ({ page }) => {
+    await page.goto('/');
+    await page.getByRole('link', { name: 'RU-2026-0207' }).click();
+    await page.getByRole('link', { name: 'Interviews' }).click();
+
+    await expect(page.getByText('What a structured conversation is for')).toBeVisible();
+
+    // The seeded interview renders all ten areas.
+    await expect(page.locator('tbody tr')).toHaveCount(10);
+    await expect(page.getByText('The original problem').first()).toBeVisible();
+    await expect(page.getByText('Technical walkthrough').first()).toBeVisible();
+
+    // Questions read aloud naturally — no claim-table formatting leaked in.
+    const questions = (await page.locator('tbody tr td:nth-child(2)').allInnerTexts()).join(' ');
+    expect(questions).not.toMatch(/Publication:/);
+    expect(questions).not.toMatch(/\(DOI/i);
+
+    // The assessment is about the answer, never about the person.
+    const options = (await page.locator('select[name^="rating-"]').first().locator('option').allInnerTexts()).join(' ');
+    expect(options).toContain('Corroborates the description');
+    expect(options).not.toMatch(/credib|honest|trustworth/i);
+
+    await expect(page.getByText(/computes no score from the ratings/i)).toBeVisible();
+  });
+
   test('the outreach queue holds a draft awaiting approval and sends nothing', async ({ page }) => {
     await page.goto('/');
     await page.getByRole('link', { name: 'RU-2026-0207' }).click();

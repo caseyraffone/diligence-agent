@@ -220,6 +220,35 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
       </section>
 
       <section className="card">
+        <h2>Structured conversations ({report.interviews.length})</h2>
+        <p className="small muted">
+          Used where no record could settle a claim about a personal contribution. Counts are shown rather than a score
+          — a conversation is evidence to weigh, not a result in itself.
+        </p>
+        {report.interviews.length === 0 ? (
+          <EmptyState>No conversations were conducted.</EmptyState>
+        ) : (
+          report.interviews.map((i, idx) => (
+            <div key={idx} style={{ borderTop: '1px solid var(--border)', paddingTop: '0.6rem', marginTop: '0.6rem' }}>
+              <strong className="small">{i.topic}</strong>
+              {i.claim ? <div className="small muted">Regarding: {i.claim}</div> : null}
+              <div className="small muted">
+                {i.humanReviewed
+                  ? `Conducted by ${i.conductedBy ?? 'a reviewer'}${
+                      i.conductedAt ? ` on ${formatDateTime(i.conductedAt)}` : ''
+                    }`
+                  : 'Prepared but not yet conducted'}
+                {' · '}
+                {i.corroborates} corroborating · {i.partiallyCorroborates} partial · {i.doesNotAddress} not addressed ·{' '}
+                {i.notAsked} not asked
+              </div>
+              {i.conclusion ? <p className="small">{i.conclusion}</p> : null}
+            </div>
+          ))
+        )}
+      </section>
+
+      <section className="card">
         <h2>Timeline</h2>
         <ul className="small">
           {report.timeline.map((t, i) => (

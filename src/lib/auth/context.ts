@@ -40,8 +40,10 @@ export function hasPermission(actor: Actor, permission: Permission): boolean {
 }
 
 /**
- * Guards every state-changing request. Must be called by all mutating API
- * routes before they touch the database.
+ * Guards state-changing API routes (fetch-driven).
+ *
+ * Requires the permission, a valid double-submit CSRF token, and — when the
+ * browser supplies one — a same-origin `Origin` header.
  */
 export async function requireMutation(permission: Permission): Promise<Actor> {
   const actor = await requirePermission(permission);
@@ -52,15 +54,39 @@ export async function requireMutation(permission: Permission): Promise<Actor> {
     throw new ForbiddenError('CSRF token missing or invalid');
   }
 
-  // Defence in depth alongside SameSite=Lax: reject cross-origin mutations
-  // outright when the browser tells us where the request came from.
-  const origin = headerList.get('origin');
-  if (origin) {
-    const expected = process.env.APP_BASE_URL ?? 'http://localhost:3200';
-    if (new URL(origin).origin !== new URL(expected).origin) {
-      throw new ForbiddenError(`Cross-origin mutation refused from ${origin}`);
-    }
-  }
-
+  await assertSameOrigin(headerList);
   return actor;
+}
+
+/**
+ * Guards state-changing Server Actions.
+ *
+ * Server Actions cannot carry a custom header, so the double-submit token does
+ * not apply. Next.js already refuses an action whose `Origin` does not match
+ * the `Host`; this adds our own explicit check against the configured base URL
+ * and the permission check, so the guarantee does not rest solely on framework
+ * behaviour.
+ */
+export async function requireServerAction(permission: Permission): Promise<Actor> {
+  const actor = await requirePermission(permission);
+  await assertSameOrigin(await headers());
+  return actor;
+}
+
+async function assertSameOrigin(headerList: Headers): Promise<void> {
+  const origin = headerList.get('origin');
+  // Same-origin non-fetch form posts may omit Origin; SameSite=Lax on the
+  // session cookie covers that case.
+  if (!origin) return;
+
+  const expected = process.env.APP_BASE_URL ?? 'http://localhost:3200';
+  let submitted: string;
+  try {
+    submitted = new URL(origin).origin;
+  } catch {
+    throw new ForbiddenError(`Unparseable Origin header: ${origin}`);
+  }
+  if (submitted !== new URL(expected).origin) {
+    throw new ForbiddenError(`Cross-origin mutation refused from ${origin}`);
+  }
 }
